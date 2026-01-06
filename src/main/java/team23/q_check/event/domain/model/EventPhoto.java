@@ -1,7 +1,7 @@
-package team23.q_check.event.domain;
+package team23.q_check.event.domain.model;
 
 import jakarta.persistence.*;
-import team23.q_check.identity.domain.User;
+import team23.q_check.identity.domain.model.User;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

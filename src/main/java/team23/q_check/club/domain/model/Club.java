@@ -1,4 +1,4 @@
-package team23.q_check.club.domain;
+package team23.q_check.club.domain.model;
 
 import jakarta.persistence.*;
 

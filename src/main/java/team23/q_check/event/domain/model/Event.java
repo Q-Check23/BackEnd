@@ -1,11 +1,10 @@
-package team23.q_check.event.domain;
+package team23.q_check.event.domain.model;
 
 import jakarta.persistence.*;
-import team23.q_check.club.domain.Club;
+import team23.q_check.club.domain.model.Club;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Entity
 @Table(name = "events")

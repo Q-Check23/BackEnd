@@ -1,4 +1,4 @@
-package team23.q_check.identity.domain;
+package team23.q_check.identity.domain.model;
 
 import jakarta.persistence.*;
 

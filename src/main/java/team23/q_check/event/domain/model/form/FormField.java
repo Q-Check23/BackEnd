@@ -1,6 +1,7 @@
-package team23.q_check.event.domain;
+package team23.q_check.event.domain.model.form;
 
 import jakarta.persistence.*;
+import team23.q_check.event.domain.model.Event;
 
 @Entity
 @Table(name = "form_fields")

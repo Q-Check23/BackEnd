@@ -1,4 +1,4 @@
-package team23.q_check.event.domain;
+package team23.q_check.event.domain.model;
 
 import jakarta.persistence.*;
 

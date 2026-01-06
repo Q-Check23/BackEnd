@@ -1,7 +1,7 @@
-package team23.q_check.settlement.domain;
+package team23.q_check.settlement.domain.model;
 
 import jakarta.persistence.*;
-import team23.q_check.identity.domain.User;
+import team23.q_check.identity.domain.model.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

@@ -1,6 +1,7 @@
-package team23.q_check.event.domain;
+package team23.q_check.event.domain.model.form;
 
 import jakarta.persistence.*;
+import team23.q_check.event.domain.model.Registration;
 
 @Entity
 @Table(name = "form_answers", uniqueConstraints = {
