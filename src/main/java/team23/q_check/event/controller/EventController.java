@@ -14,10 +14,17 @@ import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.event.dto.CreateEventRequestDto;
+import team23.q_check.event.dto.CreateRegistrationRequestDto;
+import team23.q_check.event.dto.CreateRegistrationResponseDto;
+import team23.q_check.event.dto.AdminRegistrationItemDto;
 import team23.q_check.event.dto.EventDetailResponseDto;
 import team23.q_check.event.dto.EventPageResponseDto;
+import team23.q_check.event.dto.MyRegistrationResponseDto;
 import team23.q_check.event.dto.UpdateEventRequestDto;
 import team23.q_check.event.service.EventService;
+import team23.q_check.event.service.RegistrationService;
+
+import java.util.List;
 
 @Tag(name = "Event", description = "Event API")
 @SecurityRequirement(name = "X-USER-ID")
@@ -26,9 +33,11 @@ import team23.q_check.event.service.EventService;
 public class EventController {
 
     private final EventService eventService;
+    private final RegistrationService registrationService;
 
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, RegistrationService registrationService) {
         this.eventService = eventService;
+        this.registrationService = registrationService;
     }
 
     @Operation(summary = "행사 생성 (club ADMIN 이상)")
@@ -63,5 +72,33 @@ public class EventController {
             @RequestBody UpdateEventRequestDto request
     ) {
         return ApiResponse.ok(eventService.updateEvent(currentUserId, eventId, request));
+    }
+
+    @Operation(summary = "행사 참가 신청")
+    @PostMapping("/{eventId}/registrations")
+    public ApiResponse<CreateRegistrationResponseDto> createRegistration(
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId,
+            @RequestBody CreateRegistrationRequestDto request
+    ) {
+        return ApiResponse.ok(registrationService.createRegistration(currentUserId, eventId, request));
+    }
+
+    @Operation(summary = "내 참가 신청 조회")
+    @GetMapping("/{eventId}/registrations/me")
+    public ApiResponse<MyRegistrationResponseDto> getMyRegistration(
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId
+    ) {
+        return ApiResponse.ok(registrationService.getMyRegistration(currentUserId, eventId));
+    }
+
+    @Operation(summary = "행사 참가자 목록 조회 (club ADMIN 이상)")
+    @GetMapping("/{eventId}/registrations")
+    public ApiResponse<List<AdminRegistrationItemDto>> getEventRegistrations(
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId
+    ) {
+        return ApiResponse.ok(registrationService.getEventRegistrations(currentUserId, eventId));
     }
 }

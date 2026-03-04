@@ -26,4 +26,29 @@ public class FormAnswer {
     @Lob
     @Column(name = "answer_value", nullable = true)
     private String answerValue;
+
+    protected FormAnswer() {
+    }
+
+    public FormAnswer(Registration registration, FormField field, String answerValue) {
+        this.registration = registration;
+        this.field = field;
+        this.answerValue = answerValue;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Registration getRegistration() {
+        return registration;
+    }
+
+    public FormField getField() {
+        return field;
+    }
+
+    public String getAnswerValue() {
+        return answerValue;
+    }
 }
