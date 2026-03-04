@@ -1,0 +1,106 @@
+name: "🔧 Change Request"
+description: "기존 기능의 변경 또는 삭제를 요청합니다."
+title: "[Change]: "
+labels: ["change"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        기존 기능 변경/삭제 요청입니다. 아래 내용을 작성해주세요.
+
+  - type: dropdown
+    id: change-type
+    attributes:
+      label: 변경 유형
+      description: 변경 유형을 선택해주세요.
+      options:
+        - ✏️ 수정 (Modify)
+        - ➖ 삭제 (Delete)
+        - ♻️ 리팩토링 (Refactor)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-type
+    attributes:
+      label: 대상 유형
+      description: 변경할 대상 유형을 선택해주세요.
+      options:
+        - API 엔드포인트
+        - 도메인/엔티티
+        - 서비스 로직
+        - 리포지토리
+        - 인증/인가
+        - 외부 연동
+        - 설정/환경
+        - 기타
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: 관련 도메인
+      options:
+        - identity (사용자/인증)
+        - club (동아리)
+        - event (이벤트/출석)
+        - settlement (정산)
+        - 공통/기타
+    validations:
+      required: true
+
+  - type: input
+    id: target-name
+    attributes:
+      label: 대상
+      description: 변경할 클래스나 메서드 이름을 입력해주세요.
+      placeholder: "예: EventService.createEvent() 또는 POST /api/events"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-state
+    attributes:
+      label: 현재 상태
+      description: 현재 동작이나 상태를 설명해주세요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired-state
+    attributes:
+      label: 변경 후 상태
+      description: 변경 후 원하는 상태를 작성해주세요.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: 변경 이유
+      description: 변경이 필요한 이유를 설명해주세요.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking-change
+    attributes:
+      label: Breaking Change 여부
+      description: 이 변경이 기존 API 호환성을 깨뜨리나요?
+      options:
+        - ⚠️ Breaking Change (기존 API 변경)
+        - ✅ Non-breaking (하위 호환)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 우선순위
+      options:
+        - 🔴 High
+        - 🟡 Medium
+        - 🟢 Low
+    validations:
+      required: true

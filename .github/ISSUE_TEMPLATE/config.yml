@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 README 확인
+    url: https://github.com/Q-Check23/BackEnd#readme
+    about: 먼저 README를 확인해주세요.
+  - name: 📖 Spring Boot 문서
+    url: https://docs.spring.io/spring-boot/docs/current/reference/html/
+    about: Spring Boot 공식 문서

@@ -1,0 +1,113 @@
+name: "🐛 Bug Report"
+description: "버그나 오류를 신고합니다."
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        버그를 발견해주셔서 감사합니다! 아래 내용을 최대한 자세히 작성해주세요.
+
+  - type: dropdown
+    id: bug-type
+    attributes:
+      label: 버그 유형
+      description: 버그 유형을 선택해주세요.
+      options:
+        - API 응답 오류 (4xx, 5xx)
+        - 비즈니스 로직 오류
+        - 데이터 정합성 문제
+        - 인증/인가 오류
+        - 성능 문제
+        - 외부 연동 오류
+        - 빌드/배포 오류
+        - 기타
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: 관련 도메인
+      options:
+        - identity (사용자/인증)
+        - club (동아리)
+        - event (이벤트/출석)
+        - settlement (정산)
+        - 공통/기타
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 버그 설명
+      description: 발생한 버그를 간단히 설명해주세요.
+      placeholder: "예: POST /api/events 요청 시 500 Internal Server Error 발생"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 재현 방법
+      description: 버그를 재현하는 단계를 작성해주세요.
+      placeholder: |
+        1. POST /api/events 요청
+        2. Request Body: { "title": "테스트", ... }
+        3. 500 에러 응답
+    validations:
+      required: true
+
+  - type: textarea
+    id: request-response
+    attributes:
+      label: 요청/응답 정보
+      description: API 버그인 경우 요청과 응답을 첨부해주세요.
+      render: json
+      placeholder: |
+        // Request
+        POST /api/events
+        {
+          "title": "테스트"
+        }
+        
+        // Response
+        {
+          "status": 500,
+          "error": "Internal Server Error"
+        }
+    validations:
+      required: false
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: 에러 로그
+      description: 관련 에러 로그가 있다면 붙여넣기 해주세요.
+      render: shell
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 심각도
+      options:
+        - 🔴 Critical - 서비스 불가
+        - 🟠 High - 주요 기능 장애
+        - 🟡 Medium - 일부 기능 장애
+        - 🟢 Low - 사소한 문제
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 환경 정보
+      placeholder: |
+        - 환경: local / dev / prod
+        - Java 버전: 17
+        - Spring Boot 버전: 3.x
+    validations:
+      required: false
