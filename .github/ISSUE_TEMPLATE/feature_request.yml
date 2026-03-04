@@ -1,0 +1,90 @@
+name: "✨ Feature Request"
+description: "새로운 기능 추가를 요청합니다."
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        새로운 기능 추가 요청입니다. 아래 내용을 작성해주세요.
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: 기능 유형
+      description: 추가할 기능 유형을 선택해주세요.
+      options:
+        - API 엔드포인트
+        - 도메인/엔티티
+        - 서비스 로직
+        - 리포지토리
+        - 인증/인가
+        - 외부 연동 (S3, 이메일 등)
+        - 설정/환경
+        - 기타
+    validations:
+      required: true
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: 관련 도메인
+      description: 관련된 도메인을 선택해주세요.
+      options:
+        - identity (사용자/인증)
+        - club (동아리)
+        - event (이벤트/출석)
+        - settlement (정산)
+        - 공통/기타
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 설명
+      description: 추가할 기능에 대해 설명해주세요.
+      placeholder: |
+        예: 출석 체크 API 추가
+        - POST /api/events/{eventId}/attendance
+        - QR 코드 검증 후 출석 처리
+        - 중복 출석 방지
+    validations:
+      required: true
+
+  - type: textarea
+    id: api-spec
+    attributes:
+      label: API 명세 (해당 시)
+      description: API를 추가하는 경우 명세를 작성해주세요.
+      render: markdown
+      placeholder: |
+        **Endpoint**: POST /api/events/{eventId}/attendance
+        **Request Body**:
+        ```json
+        {
+          "qrCode": "string"
+        }
+        ```
+        **Response**: 200 OK
+    validations:
+      required: false
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: 필요한 이유
+      description: 이 기능이 왜 필요한지 설명해주세요.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 우선순위
+      options:
+        - 🔴 High
+        - 🟡 Medium
+        - 🟢 Low
+    validations:
+      required: true
