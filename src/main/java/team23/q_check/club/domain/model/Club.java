@@ -31,4 +31,34 @@ public class Club {
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
+
+    protected Club() {
+    }
+
+    public Club(String name, String description, String discordGuildId, String coverImageUrl) {
+        this.name = name;
+        this.description = description;
+        this.discordGuildId = discordGuildId;
+        this.coverImageUrl = coverImageUrl;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getDiscordGuildId() {
+        return discordGuildId;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
 }
