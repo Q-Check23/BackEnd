@@ -26,15 +26,18 @@ public class ClubService {
     private final ClubRepository clubRepository;
     private final ClubMemberRepository clubMemberRepository;
     private final UserRepository userRepository;
+    private final ClubAuthorizationService clubAuthorizationService;
 
     public ClubService(
             ClubRepository clubRepository,
             ClubMemberRepository clubMemberRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            ClubAuthorizationService clubAuthorizationService
     ) {
         this.clubRepository = clubRepository;
         this.clubMemberRepository = clubMemberRepository;
         this.userRepository = userRepository;
+        this.clubAuthorizationService = clubAuthorizationService;
     }
 
     public ClubResponseDto getSampleClub() {
@@ -79,7 +82,7 @@ public class ClubService {
 
     @Transactional(readOnly = true)
     public List<ClubMemberResponseDto> getClubMembers(Long currentUserId, Long clubId) {
-        ensureClubMember(clubId, currentUserId);
+        clubAuthorizationService.requireMembership(clubId, currentUserId);
         return clubMemberRepository.findAllByClub_Id(clubId).stream()
                 .map(member -> new ClubMemberResponseDto(
                         member.getId(),
@@ -92,7 +95,7 @@ public class ClubService {
 
     @Transactional
     public ClubMemberResponseDto addClubMember(Long currentUserId, Long clubId, AddClubMemberRequestDto request) {
-        ClubMember operatorMembership = ensureClubManager(clubId, currentUserId);
+        ClubMember operatorMembership = clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
         if (request == null || request.userId() == null) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "userId is required");
         }
@@ -121,7 +124,7 @@ public class ClubService {
             Long memberId,
             UpdateClubMemberRoleRequestDto request
     ) {
-        ClubMember operatorMembership = ensureClubManager(clubId, currentUserId);
+        ClubMember operatorMembership = clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
         ClubMember targetMember = clubMemberRepository.findByIdAndClub_Id(memberId, clubId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Club member not found: " + memberId));
 
@@ -141,19 +144,6 @@ public class ClubService {
                 targetMember.getUser().getUsername(),
                 targetMember.getRole()
         );
-    }
-
-    private ClubMember ensureClubMember(Long clubId, Long currentUserId) {
-        return clubMemberRepository.findByClub_IdAndUser_Id(clubId, currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.FORBIDDEN, "Not a member of this club"));
-    }
-
-    private ClubMember ensureClubManager(Long clubId, Long currentUserId) {
-        ClubMember membership = ensureClubMember(clubId, currentUserId);
-        if (membership.getRole() != ClubRole.OWNER && membership.getRole() != ClubRole.ADMIN) {
-            throw new AppException(ErrorCode.FORBIDDEN, "Only OWNER or ADMIN can perform this action");
-        }
-        return membership;
     }
 
     private void validateCreateRequest(CreateClubRequestDto request) {

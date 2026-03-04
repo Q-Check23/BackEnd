@@ -12,6 +12,7 @@ import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
 import team23.q_check.club.repository.ClubMemberRepository;
 import team23.q_check.club.repository.ClubRepository;
+import team23.q_check.club.service.ClubAuthorizationService;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.identity.domain.model.User;
@@ -30,6 +31,7 @@ class ClubServiceTest {
     private ClubRepository clubRepository;
     private ClubMemberRepository clubMemberRepository;
     private UserRepository userRepository;
+    private ClubAuthorizationService clubAuthorizationService;
     private ClubService clubService;
 
     @BeforeEach
@@ -37,7 +39,8 @@ class ClubServiceTest {
         clubRepository = mock(ClubRepository.class);
         clubMemberRepository = mock(ClubMemberRepository.class);
         userRepository = mock(UserRepository.class);
-        clubService = new ClubService(clubRepository, clubMemberRepository, userRepository);
+        clubAuthorizationService = mock(ClubAuthorizationService.class);
+        clubService = new ClubService(clubRepository, clubMemberRepository, userRepository, clubAuthorizationService);
     }
 
     @Test
@@ -69,13 +72,8 @@ class ClubServiceTest {
 
     @Test
     void addClubMember_whenOperatorIsMember_throwsForbidden() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
-        setId(club, 1L);
-        User operator = new User("dev-1", "member");
-        setId(operator, 1L);
-
-        ClubMember memberRole = new ClubMember(club, operator, ClubRole.MEMBER);
-        when(clubMemberRepository.findByClub_IdAndUser_Id(1L, 1L)).thenReturn(Optional.of(memberRole));
+        when(clubAuthorizationService.requireAdminOrOwner(1L, 1L))
+                .thenThrow(new AppException(ErrorCode.FORBIDDEN, "Only OWNER or ADMIN can perform this action"));
 
         AppException exception = assertThrows(
                 AppException.class,
@@ -97,7 +95,7 @@ class ClubServiceTest {
         ClubMember targetMembership = new ClubMember(club, target, ClubRole.MEMBER);
         setId(targetMembership, 10L);
 
-        when(clubMemberRepository.findByClub_IdAndUser_Id(1L, 1L)).thenReturn(Optional.of(adminMembership));
+        when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
         when(clubMemberRepository.findByIdAndClub_Id(10L, 1L)).thenReturn(Optional.of(targetMembership));
 
         AppException exception = assertThrows(
