@@ -73,4 +73,8 @@ public class Registration {
     public LocalDateTime getRegisteredAt() {
         return registeredAt;
     }
+
+    public void updateStatus(RegistrationStatus status) {
+        this.status = status;
+    }
 }
