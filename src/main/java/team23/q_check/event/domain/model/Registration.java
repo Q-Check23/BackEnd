@@ -40,4 +40,41 @@ public class Registration {
     @Column(name = "register_fee_paid", nullable = false)
     private boolean registerFeePaid = false;
 
+    protected Registration() {
+    }
+
+    public Registration(Event event, User user, String qrToken, RegistrationStatus status) {
+        this.event = event;
+        this.user = user;
+        this.qrToken = qrToken;
+        this.status = status;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public String getQrToken() {
+        return qrToken;
+    }
+
+    public RegistrationStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getRegisteredAt() {
+        return registeredAt;
+    }
+
+    public void updateStatus(RegistrationStatus status) {
+        this.status = status;
+    }
 }

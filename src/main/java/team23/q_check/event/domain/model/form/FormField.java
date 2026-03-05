@@ -30,4 +30,51 @@ public class FormField {
 
     @Column(nullable = false)
     private Boolean isRequired = false;
+
+    protected FormField() {
+    }
+
+    public FormField(
+            Event event,
+            Long sortOrder,
+            String label,
+            FieldType fieldType,
+            String options,
+            Boolean isRequired
+    ) {
+        this.event = event;
+        this.sortOrder = sortOrder;
+        this.label = label;
+        this.fieldType = fieldType;
+        this.options = options;
+        this.isRequired = isRequired;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public Long getSortOrder() {
+        return sortOrder;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public FieldType getFieldType() {
+        return fieldType;
+    }
+
+    public String getOptions() {
+        return options;
+    }
+
+    public Boolean getIsRequired() {
+        return isRequired;
+    }
 }

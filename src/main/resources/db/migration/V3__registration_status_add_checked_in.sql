@@ -1,0 +1,2 @@
+ALTER TABLE registrations
+    MODIFY COLUMN status enum ('CANCELED', 'REGISTERED', 'CHECKED_IN') NOT NULL;
