@@ -1,6 +1,7 @@
 package team23.q_check.club.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,7 @@ public class ClubController {
     @Operation(summary = "클럽 생성 (생성자는 OWNER로 자동 가입)")
     @PostMapping
     public ApiResponse<ClubResponseDto> createClub(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @RequestBody CreateClubRequestDto request
     ) {
@@ -45,13 +47,17 @@ public class ClubController {
 
     @Operation(summary = "내가 속한 클럽 목록 조회")
     @GetMapping
-    public ApiResponse<List<MyClubResponseDto>> getMyClubs(@CurrentUserId Long currentUserId) {
+    public ApiResponse<List<MyClubResponseDto>> getMyClubs(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId
+    ) {
         return ApiResponse.ok(clubService.getMyClubs(currentUserId));
     }
 
     @Operation(summary = "클럽 멤버 목록 조회")
     @GetMapping("/{clubId}/members")
     public ApiResponse<List<ClubMemberResponseDto>> getClubMembers(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @PathVariable Long clubId
     ) {
@@ -61,6 +67,7 @@ public class ClubController {
     @Operation(summary = "클럽 멤버 추가 (OWNER/ADMIN)")
     @PostMapping("/{clubId}/members")
     public ApiResponse<ClubMemberResponseDto> addClubMember(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @PathVariable Long clubId,
             @RequestBody AddClubMemberRequestDto request
@@ -71,6 +78,7 @@ public class ClubController {
     @Operation(summary = "클럽 멤버 역할 변경 (OWNER/ADMIN)")
     @PutMapping("/{clubId}/members/{memberId}/role")
     public ApiResponse<ClubMemberResponseDto> updateClubMemberRole(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @PathVariable Long clubId,
             @PathVariable Long memberId,

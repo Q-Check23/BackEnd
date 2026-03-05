@@ -1,6 +1,7 @@
 package team23.q_check.event.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,7 @@ public class EventController {
     @Operation(summary = "행사 생성 (club ADMIN 이상)")
     @PostMapping
     public ApiResponse<EventDetailResponseDto> createEvent(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @RequestBody CreateEventRequestDto request
     ) {
@@ -67,6 +69,7 @@ public class EventController {
     @Operation(summary = "행사 수정 (club ADMIN 이상)")
     @PutMapping("/{eventId}")
     public ApiResponse<EventDetailResponseDto> updateEvent(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @PathVariable Long eventId,
             @RequestBody UpdateEventRequestDto request
@@ -77,6 +80,7 @@ public class EventController {
     @Operation(summary = "행사 참가 신청")
     @PostMapping("/{eventId}/registrations")
     public ApiResponse<CreateRegistrationResponseDto> createRegistration(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @PathVariable Long eventId,
             @RequestBody CreateRegistrationRequestDto request
@@ -87,6 +91,7 @@ public class EventController {
     @Operation(summary = "내 참가 신청 조회")
     @GetMapping("/{eventId}/registrations/me")
     public ApiResponse<MyRegistrationResponseDto> getMyRegistration(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @PathVariable Long eventId
     ) {
@@ -96,6 +101,7 @@ public class EventController {
     @Operation(summary = "행사 참가자 목록 조회 (club ADMIN 이상)")
     @GetMapping("/{eventId}/registrations")
     public ApiResponse<List<AdminRegistrationItemDto>> getEventRegistrations(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @PathVariable Long eventId
     ) {

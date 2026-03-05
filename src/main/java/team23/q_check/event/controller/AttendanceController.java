@@ -1,6 +1,7 @@
 package team23.q_check.event.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,7 @@ public class AttendanceController {
     @Operation(summary = "QR 체크인")
     @PostMapping("/check-in")
     public ApiResponse<CheckInResponseDto> checkIn(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @RequestBody CheckInRequestDto request
     ) {

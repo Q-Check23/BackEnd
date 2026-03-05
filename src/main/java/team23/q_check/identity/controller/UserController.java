@@ -1,6 +1,7 @@
 package team23.q_check.identity.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,13 +29,17 @@ public class UserController {
 
     @Operation(summary = "내 정보 조회")
     @GetMapping("/me")
-    public ApiResponse<MyUserResponseDto> getMyUser(@CurrentUserId Long currentUserId) {
+    public ApiResponse<MyUserResponseDto> getMyUser(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId
+    ) {
         return ApiResponse.ok(userService.getMyUser(currentUserId));
     }
 
     @Operation(summary = "내 정보 수정")
     @PutMapping("/me")
     public ApiResponse<MyUserResponseDto> updateMyUser(
+            @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @RequestBody UpdateMyUserRequestDto request
     ) {
