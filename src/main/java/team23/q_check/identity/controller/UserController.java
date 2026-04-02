@@ -13,7 +13,7 @@ import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.identity.dto.MyUserResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
-import team23.q_check.identity.service.UserService;
+import team23.q_check.identity.domain.service.UserService;
 
 @Tag(name = "User", description = "User API")
 @SecurityRequirement(name = "X-USER-ID")

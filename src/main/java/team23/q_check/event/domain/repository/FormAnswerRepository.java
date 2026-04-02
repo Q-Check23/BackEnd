@@ -1,4 +1,4 @@
-package team23.q_check.event.repository;
+package team23.q_check.event.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import team23.q_check.event.domain.model.form.FormAnswer;

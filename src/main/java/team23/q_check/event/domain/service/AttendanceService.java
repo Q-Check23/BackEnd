@@ -1,8 +1,8 @@
-package team23.q_check.event.service;
+package team23.q_check.event.domain.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import team23.q_check.club.service.ClubAuthorizationService;
+import team23.q_check.club.domain.service.ClubAuthorizationService;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.event.domain.model.AttendanceLog;
@@ -10,10 +10,10 @@ import team23.q_check.event.domain.model.AttendanceMethod;
 import team23.q_check.event.domain.model.Registration;
 import team23.q_check.event.domain.model.RegistrationStatus;
 import team23.q_check.event.dto.CheckInResponseDto;
-import team23.q_check.event.repository.AttendanceLogRepository;
-import team23.q_check.event.repository.RegistrationRepository;
+import team23.q_check.event.domain.repository.AttendanceLogRepository;
+import team23.q_check.event.domain.repository.RegistrationRepository;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 import java.time.LocalDateTime;
 

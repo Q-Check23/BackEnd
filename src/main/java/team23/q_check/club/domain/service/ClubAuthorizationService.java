@@ -1,9 +1,9 @@
-package team23.q_check.club.service;
+package team23.q_check.club.domain.service;
 
 import org.springframework.stereotype.Service;
 import team23.q_check.club.domain.model.ClubMember;
 import team23.q_check.club.domain.model.ClubRole;
-import team23.q_check.club.repository.ClubMemberRepository;
+import team23.q_check.club.domain.repository.ClubMemberRepository;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 

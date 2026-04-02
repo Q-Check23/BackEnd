@@ -8,7 +8,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
 import team23.q_check.common.error.GlobalExceptionHandler;
 import team23.q_check.identity.dto.MyUserResponseDto;
-import team23.q_check.identity.service.UserService;
+import team23.q_check.identity.domain.service.UserService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;

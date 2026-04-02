@@ -1,4 +1,4 @@
-package team23.q_check.club.service;
+package team23.q_check.club.domain.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,12 +11,12 @@ import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
-import team23.q_check.club.repository.ClubMemberRepository;
-import team23.q_check.club.repository.ClubRepository;
+import team23.q_check.club.domain.repository.ClubMemberRepository;
+import team23.q_check.club.domain.repository.ClubRepository;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 import java.util.List;
 

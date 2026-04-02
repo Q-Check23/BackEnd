@@ -9,7 +9,7 @@ import team23.q_check.club.domain.model.ClubRole;
 import team23.q_check.club.dto.ClubMemberResponseDto;
 import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.MyClubResponseDto;
-import team23.q_check.club.service.ClubService;
+import team23.q_check.club.domain.service.ClubService;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
 import team23.q_check.common.error.GlobalExceptionHandler;
 

@@ -1,4 +1,4 @@
-package team23.q_check.identity.repository;
+package team23.q_check.identity.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import team23.q_check.identity.domain.model.User;

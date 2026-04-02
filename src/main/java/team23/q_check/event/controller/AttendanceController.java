@@ -12,7 +12,7 @@ import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.event.dto.CheckInRequestDto;
 import team23.q_check.event.dto.CheckInResponseDto;
-import team23.q_check.event.service.AttendanceService;
+import team23.q_check.event.domain.service.AttendanceService;
 
 @Tag(name = "Attendance", description = "Attendance API")
 @SecurityRequirement(name = "X-USER-ID")

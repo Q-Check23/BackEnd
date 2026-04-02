@@ -1,10 +1,10 @@
-package team23.q_check.event.service;
+package team23.q_check.event.domain.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import team23.q_check.club.service.ClubAuthorizationService;
+import team23.q_check.club.domain.service.ClubAuthorizationService;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.event.domain.model.Event;
@@ -20,11 +20,11 @@ import team23.q_check.event.dto.MyRegistrationResponseDto;
 import team23.q_check.event.dto.RegistrationAnswerRequestDto;
 import team23.q_check.event.dto.RegistrationAnswerResponseDto;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
-import team23.q_check.event.repository.EventRepository;
-import team23.q_check.event.repository.FormAnswerRepository;
-import team23.q_check.event.repository.FormFieldRepository;
-import team23.q_check.event.repository.RegistrationRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
+import team23.q_check.event.domain.repository.EventRepository;
+import team23.q_check.event.domain.repository.FormAnswerRepository;
+import team23.q_check.event.domain.repository.FormFieldRepository;
+import team23.q_check.event.domain.repository.RegistrationRepository;
 
 import java.util.*;
 

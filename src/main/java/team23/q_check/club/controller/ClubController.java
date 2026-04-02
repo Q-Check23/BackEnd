@@ -17,7 +17,7 @@ import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
-import team23.q_check.club.service.ClubService;
+import team23.q_check.club.domain.service.ClubService;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 

@@ -1,4 +1,4 @@
-package team23.q_check.club.repository;
+package team23.q_check.club.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import team23.q_check.club.domain.model.ClubMember;
