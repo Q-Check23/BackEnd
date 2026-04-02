@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
+import team23.q_check.common.auth.JwtService;
 import team23.q_check.common.error.GlobalExceptionHandler;
 import team23.q_check.identity.dto.MyUserResponseDto;
 import team23.q_check.identity.domain.service.UserService;
@@ -29,7 +30,7 @@ class UserControllerTest {
         userService = mock(UserService.class);
         UserController userController = new UserController(userService);
         mockMvc = MockMvcBuilders.standaloneSetup(userController)
-                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver())
+                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver(mock(JwtService.class)))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }

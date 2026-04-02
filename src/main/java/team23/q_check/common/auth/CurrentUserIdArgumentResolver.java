@@ -15,6 +15,12 @@ public class CurrentUserIdArgumentResolver implements HandlerMethodArgumentResol
 
     private static final String USER_ID_HEADER = "X-USER-ID";
 
+    private final JwtService jwtService;
+
+    public CurrentUserIdArgumentResolver(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
+
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.hasParameterAnnotation(CurrentUserId.class)
@@ -33,11 +39,18 @@ public class CurrentUserIdArgumentResolver implements HandlerMethodArgumentResol
             throw new AppException(ErrorCode.UNAUTHORIZED, "Request context is not available");
         }
 
-        String headerValue = request.getHeader(USER_ID_HEADER);
-        if (headerValue == null || headerValue.isBlank()) {
-            throw new AppException(ErrorCode.UNAUTHORIZED, "Missing X-USER-ID header");
+        // JWT Bearer 토큰 우선 확인 (프로덕션) — access token만 허용
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtService.extractAccessTokenUserId(token);
         }
 
+        // 개발용 X-USER-ID 헤더 fallback
+        String headerValue = request.getHeader(USER_ID_HEADER);
+        if (headerValue == null || headerValue.isBlank()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED, "Missing authentication");
+        }
         try {
             return Long.parseLong(headerValue);
         } catch (NumberFormatException e) {

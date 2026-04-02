@@ -1,9 +1,13 @@
 package team23.q_check.common.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
+import team23.q_check.common.auth.JwtAuthInterceptor;
 
 import java.util.List;
 
@@ -11,9 +15,36 @@ import java.util.List;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final CurrentUserIdArgumentResolver currentUserIdArgumentResolver;
+    private final JwtAuthInterceptor jwtAuthInterceptor;
 
-    public WebMvcConfig(CurrentUserIdArgumentResolver currentUserIdArgumentResolver) {
+    @Value("${cors.allowed-origins}")
+    private String[] allowedOrigins;
+
+    public WebMvcConfig(CurrentUserIdArgumentResolver currentUserIdArgumentResolver, JwtAuthInterceptor jwtAuthInterceptor) {
         this.currentUserIdArgumentResolver = currentUserIdArgumentResolver;
+        this.jwtAuthInterceptor = jwtAuthInterceptor;
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins(allowedOrigins)
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(jwtAuthInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/auth/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/v3/api-docs/**"
+                );
     }
 
     @Override
