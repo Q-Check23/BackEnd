@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import team23.q_check.club.domain.model.Club;
-import team23.q_check.club.domain.model.ClubMember;
-import team23.q_check.club.domain.model.ClubRole;
 import team23.q_check.club.service.ClubAuthorizationService;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
@@ -21,7 +19,7 @@ import team23.q_check.event.repository.FormAnswerRepository;
 import team23.q_check.event.repository.FormFieldRepository;
 import team23.q_check.event.repository.RegistrationRepository;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;

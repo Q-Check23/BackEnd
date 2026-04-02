@@ -11,6 +11,7 @@ import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.service.ClubService;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
+import team23.q_check.common.auth.JwtService;
 import team23.q_check.common.error.GlobalExceptionHandler;
 
 import java.util.List;
@@ -36,7 +37,7 @@ class ClubControllerTest {
         clubService = mock(ClubService.class);
         ClubController clubController = new ClubController(clubService);
         mockMvc = MockMvcBuilders.standaloneSetup(clubController)
-                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver())
+                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver(mock(JwtService.class)))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }

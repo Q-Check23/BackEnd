@@ -6,7 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import team23.q_check.identity.dto.UserResponseDto;
-import team23.q_check.identity.service.UserService;
+import team23.q_check.identity.domain.service.UserService;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

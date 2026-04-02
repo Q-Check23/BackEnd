@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.identity.dto.UserResponseDto;
-import team23.q_check.identity.service.UserService;
+import team23.q_check.identity.domain.service.UserService;
 
 @Tag(name = "Identity", description = "Identity API")
 @RestController

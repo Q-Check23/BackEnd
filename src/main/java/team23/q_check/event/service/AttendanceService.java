@@ -13,7 +13,7 @@ import team23.q_check.event.dto.CheckInResponseDto;
 import team23.q_check.event.repository.AttendanceLogRepository;
 import team23.q_check.event.repository.RegistrationRepository;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 import java.time.LocalDateTime;
 
