@@ -24,6 +24,9 @@ spring:
     password: ${LOCAL_MYSQL_PASSWORD}     # MySQL 비밀번호
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+dev-auth:
+  enabled: true  # X-USER-ID 헤더 인증 허용 여부. 로컬 개발 전용, 프로덕션에서는 반드시 false
+
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS}  # 쉼표 구분, ex) http://localhost:3000,https://qcheck.example.com
 

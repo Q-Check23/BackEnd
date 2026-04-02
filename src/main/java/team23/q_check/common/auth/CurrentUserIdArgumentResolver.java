@@ -39,11 +39,11 @@ public class CurrentUserIdArgumentResolver implements HandlerMethodArgumentResol
             throw new AppException(ErrorCode.UNAUTHORIZED, "Request context is not available");
         }
 
-        // JWT Bearer 토큰 우선 확인 (프로덕션)
+        // JWT Bearer 토큰 우선 확인 (프로덕션) — access token만 허용
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            return jwtService.extractUserId(token);
+            return jwtService.extractAccessTokenUserId(token);
         }
 
         // 개발용 X-USER-ID 헤더 fallback

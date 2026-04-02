@@ -67,7 +67,14 @@ public class JwtService {
         }
     }
 
-    /** access 또는 refresh 토큰에서 userId 추출 */
+    /** access token에서만 userId 추출 — 인증 게이트에서 사용 */
+    public Long extractAccessTokenUserId(String token) {
+        Claims claims = parseToken(token);
+        validateType(claims, TYPE_ACCESS);
+        return Long.parseLong(claims.getSubject());
+    }
+
+    /** refresh token 갱신 시 userId 추출 — AuthService.refresh()에서만 사용 */
     public Long extractUserId(String token) {
         Claims claims = parseToken(token);
         validateType(claims, TYPE_ACCESS, TYPE_REFRESH);

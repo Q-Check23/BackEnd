@@ -107,8 +107,8 @@ public class AuthService {
         return new TokenResult(userId, newAccessToken, newRefreshToken);
     }
 
-    public String getAuthorizationUrl() {
-        return discordOAuthService.getAuthorizationUrl();
+    public String getAuthorizationUrl(String state) {
+        return discordOAuthService.getAuthorizationUrl(state);
     }
 
     public boolean isNicknameAvailable(String nickname) {

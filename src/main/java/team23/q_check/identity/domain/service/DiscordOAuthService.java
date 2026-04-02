@@ -23,12 +23,13 @@ public class DiscordOAuthService {
         this.restClient = RestClient.create();
     }
 
-    public String getAuthorizationUrl() {
+    public String getAuthorizationUrl(String state) {
         return UriComponentsBuilder.fromUriString(discordProps.oauthUrl())
                 .queryParam("client_id", discordProps.clientId())
                 .queryParam("redirect_uri", discordProps.redirectUri())
                 .queryParam("response_type", "code")
                 .queryParam("scope", "identify email")
+                .queryParam("state", state)
                 .build()
                 .toUriString();
     }

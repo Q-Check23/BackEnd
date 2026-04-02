@@ -3,10 +3,14 @@ package team23.q_check.identity.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 import team23.q_check.common.config.JwtProperties;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
@@ -24,6 +28,8 @@ import java.time.Duration;
 @RequestMapping("/auth")
 public class AuthController {
 
+    private static final String OAUTH_STATE_SESSION_KEY = "oauth2_state";
+
     private final AuthService authService;
     private final JwtProperties jwtProperties;
 
@@ -34,10 +40,10 @@ public class AuthController {
 
     @Operation(summary = "Discord 로그인 리다이렉트", description = "Discord OAuth2 인증 페이지로 리다이렉트합니다")
     @GetMapping("/login")
-    public void login(HttpServletResponse response) throws IOException {
-        // DiscordOAuthService에서 URL을 가져오지 않고 AuthService를 통해 처리
-        // 직접 주입하는 대신 AuthController에서 DiscordOAuthService를 주입받아 URL을 가져옵니다
-        response.sendRedirect(authService.getAuthorizationUrl());
+    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String state = UUID.randomUUID().toString();
+        request.getSession(true).setAttribute(OAUTH_STATE_SESSION_KEY, state);
+        response.sendRedirect(authService.getAuthorizationUrl(state));
     }
 
     @Operation(
@@ -48,8 +54,11 @@ public class AuthController {
     @GetMapping("/code")
     public ApiResponse<AuthCodeResponseDto> handleCode(
             @RequestParam String code,
+            @RequestParam(required = false) String state,
+            HttpServletRequest request,
             HttpServletResponse response
     ) {
+        validateOAuthState(request, state);
         CodeResult result = authService.processCode(code);
         if (!result.isNewUser()) {
             setRefreshCookie(response, result.refreshToken());
@@ -104,6 +113,17 @@ public class AuthController {
                 .sameSite("Strict")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private void validateOAuthState(HttpServletRequest request, String state) {
+        HttpSession session = request.getSession(false);
+        String stored = (session != null) ? (String) session.getAttribute(OAUTH_STATE_SESSION_KEY) : null;
+        if (session != null) {
+            session.removeAttribute(OAUTH_STATE_SESSION_KEY);
+        }
+        if (stored == null || !stored.equals(state)) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "OAuth state가 유효하지 않습니다");
+        }
     }
 
     private String extractBearerToken(String authHeader) {
