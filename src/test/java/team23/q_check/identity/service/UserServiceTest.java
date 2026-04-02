@@ -4,9 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import team23.q_check.common.error.AppException;
 import team23.q_check.identity.domain.model.User;
+import team23.q_check.identity.domain.service.UserService;
 import team23.q_check.identity.dto.MyUserResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 import java.lang.reflect.Field;
 import java.util.Optional;

@@ -16,7 +16,7 @@ import team23.q_check.club.repository.ClubRepository;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 import java.util.List;
 

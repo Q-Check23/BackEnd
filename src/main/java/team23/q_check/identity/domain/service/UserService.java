@@ -1,4 +1,4 @@
-package team23.q_check.identity.service;
+package team23.q_check.identity.domain.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -8,7 +8,7 @@ import team23.q_check.identity.domain.model.User;
 import team23.q_check.identity.dto.MyUserResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
 import team23.q_check.identity.dto.UserResponseDto;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 @Service
 public class UserService {

@@ -12,11 +12,10 @@ import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
 import team23.q_check.club.repository.ClubMemberRepository;
 import team23.q_check.club.repository.ClubRepository;
-import team23.q_check.club.service.ClubAuthorizationService;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 
 import java.lang.reflect.Field;
 import java.util.Optional;

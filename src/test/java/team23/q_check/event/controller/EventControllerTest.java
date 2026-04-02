@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
+import team23.q_check.common.auth.JwtService;
 import team23.q_check.common.error.GlobalExceptionHandler;
 import team23.q_check.event.dto.EventDetailResponseDto;
 import team23.q_check.event.dto.EventListItemDto;
@@ -43,7 +44,7 @@ class EventControllerTest {
         registrationService = mock(RegistrationService.class);
         EventController eventController = new EventController(eventService, registrationService);
         mockMvc = MockMvcBuilders.standaloneSetup(eventController)
-                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver())
+                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver(mock(JwtService.class)))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }

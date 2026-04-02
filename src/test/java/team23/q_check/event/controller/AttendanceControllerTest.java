@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
+import team23.q_check.common.auth.JwtService;
 import team23.q_check.common.error.GlobalExceptionHandler;
 import team23.q_check.event.dto.CheckInResponseDto;
 import team23.q_check.event.service.AttendanceService;
@@ -28,7 +29,7 @@ class AttendanceControllerTest {
         attendanceService = mock(AttendanceService.class);
         AttendanceController controller = new AttendanceController(attendanceService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver())
+                .setCustomArgumentResolvers(new CurrentUserIdArgumentResolver(mock(JwtService.class)))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }

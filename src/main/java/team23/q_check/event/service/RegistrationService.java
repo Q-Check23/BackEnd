@@ -20,7 +20,7 @@ import team23.q_check.event.dto.MyRegistrationResponseDto;
 import team23.q_check.event.dto.RegistrationAnswerRequestDto;
 import team23.q_check.event.dto.RegistrationAnswerResponseDto;
 import team23.q_check.identity.domain.model.User;
-import team23.q_check.identity.repository.UserRepository;
+import team23.q_check.identity.domain.repository.UserRepository;
 import team23.q_check.event.repository.EventRepository;
 import team23.q_check.event.repository.FormAnswerRepository;
 import team23.q_check.event.repository.FormFieldRepository;
