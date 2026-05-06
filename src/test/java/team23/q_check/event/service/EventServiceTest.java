@@ -80,7 +80,12 @@ class EventServiceTest {
                 new CreateEventRequestDto(
                         1L,
                         "OT",
+                        null,
                         "2026-03-10T19:00:00",
+                        null,
+                        null,
+                        null,
+                        null,
                         List.of(new FormFieldRequestDto("SELECT", "식사 메뉴", true, List.of("한식", "양식")))
                 )
         );
@@ -105,7 +110,12 @@ class EventServiceTest {
                         new CreateEventRequestDto(
                                 1L,
                                 "OT",
+                                null,
                                 "2026-03-10T19:00:00",
+                                null,
+                                null,
+                                null,
+                                null,
                                 List.of(new FormFieldRequestDto("SELECT", "식사 메뉴", true, List.of()))
                         )
                 )
@@ -119,7 +129,8 @@ class EventServiceTest {
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> eventService.updateEvent(1L, 999L, new UpdateEventRequestDto(null, null, "강남", false))
+                () -> eventService.updateEvent(1L, 999L,
+                        new UpdateEventRequestDto(null, null, null, null, "강남", null, null, false))
         );
         assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }

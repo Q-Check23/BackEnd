@@ -117,16 +117,36 @@ public class Event {
         return registerFee;
     }
 
-    public void update(String title, LocalDateTime startTime, String location, Boolean isActive) {
+    public void update(
+            String title,
+            String description,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            String location,
+            String discordChannelId,
+            BigDecimal registerFee,
+            Boolean isActive
+    ) {
         if (title != null && !title.isBlank()) {
             this.title = title;
         }
+        if (description != null) {
+            this.description = description;
+        }
         if (startTime != null) {
             this.startTime = startTime;
-            this.endTime = startTime;
+        }
+        if (endTime != null) {
+            this.endTime = endTime;
         }
         if (location != null) {
             this.location = location;
+        }
+        if (discordChannelId != null) {
+            this.discordChannelId = discordChannelId;
+        }
+        if (registerFee != null) {
+            this.registerFee = registerFee;
         }
         if (isActive != null) {
             this.isActive = isActive;

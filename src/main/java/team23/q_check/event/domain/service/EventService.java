@@ -26,6 +26,7 @@ import team23.q_check.event.dto.UpdateEventRequestDto;
 import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +61,29 @@ public class EventService {
         Club club = membership.getClub();
 
         LocalDateTime startTime = parseDateTime(request.startTime(), "startTime");
-        Event event = new Event(club, request.title().trim(), startTime, startTime, null, true);
+        LocalDateTime endTime = request.endTime() == null
+                ? startTime
+                : parseDateTime(request.endTime(), "endTime");
+        if (endTime.isBefore(startTime)) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "endTime must be on or after startTime");
+        }
+
+        BigDecimal registerFee = request.registerFee() == null ? BigDecimal.ZERO : request.registerFee();
+        if (registerFee.signum() < 0) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "registerFee must be zero or positive");
+        }
+
+        Event event = new Event(
+                club,
+                request.title().trim(),
+                request.description(),
+                startTime,
+                endTime,
+                request.location(),
+                request.discordChannelId(),
+                true,
+                registerFee
+        );
         Event savedEvent = eventRepository.save(event);
 
         List<FormField> fields = createFormFields(savedEvent, request.formFields());
@@ -108,7 +131,26 @@ public class EventService {
         clubAuthorizationService.requireAdminOrOwner(event.getClub().getId(), currentUserId);
 
         LocalDateTime startTime = request.startTime() == null ? null : parseDateTime(request.startTime(), "startTime");
-        event.update(request.title(), startTime, request.location(), request.isActive());
+        LocalDateTime endTime = request.endTime() == null ? null : parseDateTime(request.endTime(), "endTime");
+        LocalDateTime effectiveStart = startTime != null ? startTime : event.getStartTime();
+        LocalDateTime effectiveEnd = endTime != null ? endTime : event.getEndTime();
+        if (effectiveEnd != null && effectiveStart != null && effectiveEnd.isBefore(effectiveStart)) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "endTime must be on or after startTime");
+        }
+        if (request.registerFee() != null && request.registerFee().signum() < 0) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "registerFee must be zero or positive");
+        }
+
+        event.update(
+                request.title(),
+                request.description(),
+                startTime,
+                endTime,
+                request.location(),
+                request.discordChannelId(),
+                request.registerFee(),
+                request.isActive()
+        );
 
         List<FormField> fields = formFieldRepository.findAllByEvent_IdOrderBySortOrderAsc(eventId);
         return toDetailDto(event, fields);
