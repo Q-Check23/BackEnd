@@ -46,6 +46,30 @@ public class AttendanceService {
         Registration registration = registrationRepository.findByQrToken(qrToken)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Registration not found for qrToken"));
 
+        return performCheckIn(currentUserId, registration, AttendanceMethod.QR);
+    }
+
+    /**
+     * 관리자가 registrationId로 직접 체크인을 처리한다.
+     * QR 인식 실패·지각 등 운영 상황에서 사용한다.
+     */
+    @Transactional
+    public CheckInResponseDto manualCheckIn(Long currentUserId, Long registrationId) {
+        if (registrationId == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "registrationId is required");
+        }
+
+        Registration registration = registrationRepository.findById(registrationId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Registration not found: " + registrationId));
+
+        return performCheckIn(currentUserId, registration, AttendanceMethod.MANUAL);
+    }
+
+    /**
+     * 권한 검증·상태 전이·로그 생성 공통 흐름.
+     * QR과 Manual이 공유한다.
+     */
+    private CheckInResponseDto performCheckIn(Long currentUserId, Registration registration, AttendanceMethod method) {
         clubAuthorizationService.requireAdminOrOwner(registration.getEvent().getClub().getId(), currentUserId);
 
         if (registration.getStatus() == RegistrationStatus.CHECKED_IN) {
@@ -63,7 +87,7 @@ public class AttendanceService {
                 registration,
                 checker,
                 now,
-                AttendanceMethod.QR
+                method
         );
         attendanceLogRepository.save(attendanceLog);
 

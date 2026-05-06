@@ -52,4 +52,8 @@ public class AttendanceLog {
     public Long getId() {
         return id;
     }
+
+    public AttendanceMethod getMethod() {
+        return method;
+    }
 }
