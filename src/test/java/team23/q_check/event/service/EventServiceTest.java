@@ -19,6 +19,7 @@ import team23.q_check.event.dto.CreateEventRequestDto;
 import team23.q_check.event.dto.FormFieldRequestDto;
 import team23.q_check.event.dto.UpdateEventRequestDto;
 import team23.q_check.event.domain.repository.AttendanceLogRepository;
+import team23.q_check.event.domain.repository.EventPhotoRepository;
 import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
@@ -45,6 +46,7 @@ class EventServiceTest {
     private RegistrationRepository registrationRepository;
     private FormAnswerRepository formAnswerRepository;
     private AttendanceLogRepository attendanceLogRepository;
+    private EventPhotoRepository eventPhotoRepository;
     private ClubRepository clubRepository;
     private ClubAuthorizationService clubAuthorizationService;
     private EventService eventService;
@@ -56,6 +58,7 @@ class EventServiceTest {
         registrationRepository = mock(RegistrationRepository.class);
         formAnswerRepository = mock(FormAnswerRepository.class);
         attendanceLogRepository = mock(AttendanceLogRepository.class);
+        eventPhotoRepository = mock(EventPhotoRepository.class);
         clubRepository = mock(ClubRepository.class);
         clubAuthorizationService = mock(ClubAuthorizationService.class);
         eventService = new EventService(
@@ -64,6 +67,7 @@ class EventServiceTest {
                 registrationRepository,
                 formAnswerRepository,
                 attendanceLogRepository,
+                eventPhotoRepository,
                 clubRepository,
                 clubAuthorizationService,
                 new ObjectMapper()
@@ -304,6 +308,7 @@ class EventServiceTest {
         verify(formAnswerRepository).deleteAllByRegistration_Event_Id(100L);
         verify(registrationRepository).deleteAllByEvent_Id(100L);
         verify(formFieldRepository).deleteAllByEvent_Id(100L);
+        verify(eventPhotoRepository).deleteAllByEvent_Id(100L);
         verify(eventRepository).delete(event);
     }
 
