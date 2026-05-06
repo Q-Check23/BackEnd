@@ -9,7 +9,10 @@ import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
 import team23.q_check.common.auth.JwtService;
 import team23.q_check.common.error.GlobalExceptionHandler;
 import team23.q_check.identity.dto.MyUserResponseDto;
+import team23.q_check.identity.dto.UserSearchResultDto;
 import team23.q_check.identity.domain.service.UserService;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -75,5 +78,34 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    void searchUsers_byNickname_returnsList() throws Exception {
+        when(userService.searchUsers("kim", null)).thenReturn(List.of(
+                new UserSearchResultDto(1L, "kimjyun", "김지윤"),
+                new UserSearchResultDto(2L, "kimminseo", null)
+        ));
+
+        mockMvc.perform(get("/api/users/search?nickname=kim").header("X-USER-ID", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].userId").value(1))
+                .andExpect(jsonPath("$.data[0].username").value("kimjyun"))
+                .andExpect(jsonPath("$.data[0].realName").value("김지윤"))
+                .andExpect(jsonPath("$.data[0].email").doesNotExist());
+    }
+
+    @Test
+    void searchUsers_byEmail_returnsSingle() throws Exception {
+        when(userService.searchUsers(null, "kim@example.com")).thenReturn(List.of(
+                new UserSearchResultDto(1L, "kimjyun", "김지윤")
+        ));
+
+        mockMvc.perform(get("/api/users/search?email=kim@example.com").header("X-USER-ID", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].userId").value(1));
     }
 }
