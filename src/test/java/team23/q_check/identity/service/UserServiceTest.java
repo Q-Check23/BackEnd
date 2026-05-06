@@ -34,7 +34,7 @@ class UserServiceTest {
 
     @Test
     void getMyUser_returnsUserInfo() throws Exception {
-        User user = new User("dev-1", "qcheck_user");
+        User user = new User("dev-1", null, "qcheck_user", null);
         user.updateRealName("김지윤");
         setId(user, 1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -48,7 +48,7 @@ class UserServiceTest {
 
     @Test
     void updateMyUser_updatesRealName() throws Exception {
-        User user = new User("dev-1", "qcheck_user");
+        User user = new User("dev-1", null, "qcheck_user", null);
         setId(user, 1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
@@ -67,10 +67,10 @@ class UserServiceTest {
 
     @Test
     void searchUsers_byNickname_returnsMatchingList() throws Exception {
-        User u1 = new User("dev-1", "kimjyun");
+        User u1 = new User("dev-1", null, "kimjyun", null);
         u1.updateRealName("김지윤");
         setId(u1, 1L);
-        User u2 = new User("dev-2", "kimminseo");
+        User u2 = new User("dev-2", null, "kimminseo", null);
         setId(u2, 2L);
         when(userRepository.findTop20ByUsernameContainingIgnoreCaseOrderByUsernameAsc("kim"))
                 .thenReturn(List.of(u1, u2));
@@ -86,7 +86,7 @@ class UserServiceTest {
 
     @Test
     void searchUsers_byEmail_returnsSingleResult() throws Exception {
-        User u1 = new User("dev-1", "kimjyun");
+        User u1 = new User("dev-1", null, "kimjyun", null);
         setId(u1, 1L);
         when(userRepository.findByEmail("kim@example.com")).thenReturn(Optional.of(u1));
 
@@ -116,7 +116,7 @@ class UserServiceTest {
 
     @Test
     void searchUsers_emailTakesPriorityOverNickname() throws Exception {
-        User u1 = new User("dev-1", "kimjyun");
+        User u1 = new User("dev-1", null, "kimjyun", null);
         setId(u1, 1L);
         when(userRepository.findByEmail("kim@example.com")).thenReturn(Optional.of(u1));
 

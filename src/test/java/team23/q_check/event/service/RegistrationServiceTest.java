@@ -93,7 +93,7 @@ class RegistrationServiceTest {
 
         when(eventRepository.findById(100L)).thenReturn(Optional.of(event));
         when(registrationRepository.existsByEvent_IdAndUser_Id(100L, 1L)).thenReturn(false);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(new User("dev-1", "kim")));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(new User("dev-1", null, "kim", null)));
         when(formFieldRepository.findAllByEvent_IdOrderBySortOrderAsc(100L)).thenReturn(List.of(requiredField));
 
         AppException exception = assertThrows(
@@ -122,7 +122,7 @@ class RegistrationServiceTest {
 
         when(eventRepository.findById(100L)).thenReturn(Optional.of(event));
         when(registrationRepository.existsByEvent_IdAndUser_Id(100L, 1L)).thenReturn(false);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(new User("dev-1", "kim")));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(new User("dev-1", null, "kim", null)));
         when(formFieldRepository.findAllByEvent_IdOrderBySortOrderAsc(100L)).thenReturn(List.of(selectField));
 
         AppException exception = assertThrows(
@@ -183,7 +183,7 @@ class RegistrationServiceTest {
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 null,
                 true);
-        User user = new User("dev-1", "kim");
+        User user = new User("dev-1", null, "kim", null);
         setId(user, 1L);
 
         Registration registration = new Registration(event, user, "token-1", team23.q_check.event.domain.model.RegistrationStatus.REGISTERED);
@@ -209,7 +209,7 @@ class RegistrationServiceTest {
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(1).plusHours(2),
                 null, true);
-        User user = new User("dev-1", "kim");
+        User user = new User("dev-1", null, "kim", null);
         setId(user, 1L);
         Registration registration = new Registration(event, user, "token-1",
                 team23.q_check.event.domain.model.RegistrationStatus.REGISTERED);
@@ -229,7 +229,7 @@ class RegistrationServiceTest {
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(1).plusHours(2),
                 null, true);
-        User user = new User("dev-1", "kim");
+        User user = new User("dev-1", null, "kim", null);
         setId(user, 1L);
         Registration registration = new Registration(event, user, "token-1",
                 team23.q_check.event.domain.model.RegistrationStatus.CHECKED_IN);
@@ -251,7 +251,7 @@ class RegistrationServiceTest {
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(1).plusHours(2),
                 null, true);
-        User user = new User("dev-1", "kim");
+        User user = new User("dev-1", null, "kim", null);
         setId(user, 1L);
         Registration registration = new Registration(event, user, "token-1",
                 team23.q_check.event.domain.model.RegistrationStatus.CANCELED);
@@ -273,7 +273,7 @@ class RegistrationServiceTest {
                 LocalDateTime.now().minusHours(1),
                 LocalDateTime.now().plusHours(1),
                 null, true);
-        User user = new User("dev-1", "kim");
+        User user = new User("dev-1", null, "kim", null);
         setId(user, 1L);
         Registration registration = new Registration(event, user, "token-1",
                 team23.q_check.event.domain.model.RegistrationStatus.REGISTERED);

@@ -69,7 +69,7 @@ class CalendarServiceTest {
     void getMonthlyCalendar_groupsEventsByClubAndSortsByStartTime() throws Exception {
         Club umc = newClub(10L, "UMC");
         Club gdsc = newClub(20L, "GDSC");
-        User me = new User("dev-1", "kim");
+        User me = new User("dev-1", null, "kim", null);
         setId(me, 1L);
         when(clubMemberRepository.findAllByUser_Id(1L)).thenReturn(List.of(
                 new ClubMember(umc, me, ClubRole.MEMBER),
@@ -102,7 +102,7 @@ class CalendarServiceTest {
     void getMonthlyCalendar_clubWithNoEvents_isOmittedFromResponse() throws Exception {
         Club umc = newClub(10L, "UMC");
         Club gdsc = newClub(20L, "GDSC");
-        User me = new User("dev-1", "kim");
+        User me = new User("dev-1", null, "kim", null);
         setId(me, 1L);
         when(clubMemberRepository.findAllByUser_Id(1L)).thenReturn(List.of(
                 new ClubMember(umc, me, ClubRole.MEMBER),
