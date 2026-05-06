@@ -32,8 +32,8 @@ public class Event {
     @Column(nullable = true, length = 100)
     private String location;
 
-    @Column(nullable = true, length = 50)
-    private String discord_channel_id;
+    @Column(name = "discord_channel_id", nullable = true, length = 50)
+    private String discordChannelId;
 
     @Column(nullable = false)
     private Boolean isActive = true;
@@ -52,12 +52,29 @@ public class Event {
             String location,
             Boolean isActive
     ) {
+        this(club, title, null, startTime, endTime, location, null, isActive, BigDecimal.ZERO);
+    }
+
+    public Event(
+            Club club,
+            String title,
+            String description,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            String location,
+            String discordChannelId,
+            Boolean isActive,
+            BigDecimal registerFee
+    ) {
         this.club = club;
         this.title = title;
+        this.description = description;
         this.startTime = startTime;
         this.endTime = endTime;
         this.location = location;
-        this.isActive = isActive;
+        this.discordChannelId = discordChannelId;
+        this.isActive = isActive == null ? Boolean.TRUE : isActive;
+        this.registerFee = registerFee == null ? BigDecimal.ZERO : registerFee;
     }
 
     public Long getId() {
@@ -72,16 +89,32 @@ public class Event {
         return title;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public LocalDateTime getStartTime() {
         return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
     public String getLocation() {
         return location;
     }
 
+    public String getDiscordChannelId() {
+        return discordChannelId;
+    }
+
     public Boolean getIsActive() {
         return isActive;
+    }
+
+    public BigDecimal getRegisterFee() {
+        return registerFee;
     }
 
     public void update(String title, LocalDateTime startTime, String location, Boolean isActive) {
