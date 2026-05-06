@@ -134,6 +134,21 @@ public class SettlementService {
         return toItemDto(item);
     }
 
+    /** 관리자가 미납자에게 리마인드 발송: last_reminded_at·remind_count 갱신. */
+    @Transactional
+    public SettlementItemResponseDto recordReminder(Long currentUserId, Long itemId) {
+        SettlementItem item = settlementItemRepository.findById(itemId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Settlement item not found: " + itemId));
+        clubAuthorizationService.requireAdminOrOwner(
+                item.getSettlement().getEvent().getClub().getId(), currentUserId);
+
+        if (item.getStatus() == SettlementItemStatus.COMPLETED) {
+            throw new AppException(ErrorCode.CONFLICT, "Cannot remind a completed item");
+        }
+        item.recordReminder();
+        return toItemDto(item);
+    }
+
     /** 관리자가 송금을 확인: PENDING → COMPLETED. */
     @Transactional
     public SettlementItemResponseDto confirmAsCompleted(Long currentUserId, Long itemId) {

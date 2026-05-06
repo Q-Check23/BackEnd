@@ -87,4 +87,17 @@ public class SettlementController {
     ) {
         return ApiResponse.ok(settlementService.confirmAsCompleted(currentUserId, itemId));
     }
+
+    @Operation(summary = "정산 리마인더 기록 (club ADMIN 이상)",
+            description = "미납 사용자에게 알림을 보낸 시각과 횟수를 기록합니다. " +
+                    "실제 알림 발송 처리는 별도 컴포넌트의 책임이며, " +
+                    "이 엔드포인트는 last_reminded_at과 remind_count만 갱신합니다.")
+    @PostMapping("/items/{itemId}/remind")
+    public ApiResponse<SettlementItemResponseDto> recordReminder(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long itemId
+    ) {
+        return ApiResponse.ok(settlementService.recordReminder(currentUserId, itemId));
+    }
 }
