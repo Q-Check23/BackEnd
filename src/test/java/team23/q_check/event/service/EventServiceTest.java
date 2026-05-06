@@ -3,6 +3,7 @@ package team23.q_check.event.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import team23.q_check.club.domain.model.Club;
 import team23.q_check.club.domain.model.ClubMember;
 import team23.q_check.club.domain.model.ClubRole;
@@ -21,13 +22,17 @@ import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class EventServiceTest {
@@ -80,7 +85,12 @@ class EventServiceTest {
                 new CreateEventRequestDto(
                         1L,
                         "OT",
+                        null,
                         "2026-03-10T19:00:00",
+                        null,
+                        null,
+                        null,
+                        null,
                         List.of(new FormFieldRequestDto("SELECT", "식사 메뉴", true, List.of("한식", "양식")))
                 )
         );
@@ -105,7 +115,12 @@ class EventServiceTest {
                         new CreateEventRequestDto(
                                 1L,
                                 "OT",
+                                null,
                                 "2026-03-10T19:00:00",
+                                null,
+                                null,
+                                null,
+                                null,
                                 List.of(new FormFieldRequestDto("SELECT", "식사 메뉴", true, List.of()))
                         )
                 )
@@ -114,12 +129,146 @@ class EventServiceTest {
     }
 
     @Test
+    void createEvent_propagatesAllFieldsToEntity() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        setId(club, 1L);
+        User admin = new User("dev-1", "admin");
+        ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
+        when(clubRepository.existsById(1L)).thenReturn(true);
+        when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
+
+        Event saved = new Event(club, "OT",
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                LocalDateTime.parse("2026-03-10T22:00:00"),
+                null, true);
+        setId(saved, 100L);
+        when(eventRepository.save(any(Event.class))).thenReturn(saved);
+        when(formFieldRepository.findAllByEvent_IdOrderBySortOrderAsc(100L)).thenReturn(List.of());
+
+        eventService.createEvent(
+                1L,
+                new CreateEventRequestDto(
+                        1L,
+                        "OT",
+                        "신입 환영회",
+                        "2026-03-10T19:00:00",
+                        "2026-03-10T22:00:00",
+                        "강남",
+                        "1234567890",
+                        new BigDecimal("10000"),
+                        List.of()
+                )
+        );
+
+        ArgumentCaptor<Event> captor = ArgumentCaptor.forClass(Event.class);
+        verify(eventRepository).save(captor.capture());
+        Event captured = captor.getValue();
+        assertEquals("OT", captured.getTitle());
+        assertEquals("신입 환영회", captured.getDescription());
+        assertEquals(LocalDateTime.parse("2026-03-10T19:00:00"), captured.getStartTime());
+        assertEquals(LocalDateTime.parse("2026-03-10T22:00:00"), captured.getEndTime());
+        assertEquals("강남", captured.getLocation());
+        assertEquals("1234567890", captured.getDiscordChannelId());
+        assertEquals(new BigDecimal("10000"), captured.getRegisterFee());
+    }
+
+    @Test
+    void createEvent_endTimeBeforeStart_throwsInvalidRequest() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        setId(club, 1L);
+        ClubMember adminMembership = new ClubMember(club, new User("dev-1", "admin"), ClubRole.ADMIN);
+        when(clubRepository.existsById(1L)).thenReturn(true);
+        when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> eventService.createEvent(1L, new CreateEventRequestDto(
+                        1L, "OT", null,
+                        "2026-03-10T19:00:00", "2026-03-10T18:00:00",
+                        null, null, null, List.of()
+                ))
+        );
+        assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
+    }
+
+    @Test
+    void createEvent_negativeRegisterFee_throwsInvalidRequest() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        setId(club, 1L);
+        ClubMember adminMembership = new ClubMember(club, new User("dev-1", "admin"), ClubRole.ADMIN);
+        when(clubRepository.existsById(1L)).thenReturn(true);
+        when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> eventService.createEvent(1L, new CreateEventRequestDto(
+                        1L, "OT", null, "2026-03-10T19:00:00", null, null, null,
+                        new BigDecimal("-1"), List.of()
+                ))
+        );
+        assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
+    }
+
+    @Test
+    void updateEvent_withEndTimeOnly_doesNotOverwriteStartTime() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        setId(club, 1L);
+        Event event = new Event(club, "OT",
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                LocalDateTime.parse("2026-03-10T20:00:00"),
+                "강남", true);
+        setId(event, 100L);
+        when(eventRepository.findById(100L)).thenReturn(Optional.of(event));
+        when(formFieldRepository.findAllByEvent_IdOrderBySortOrderAsc(100L)).thenReturn(List.of());
+
+        eventService.updateEvent(1L, 100L, new UpdateEventRequestDto(
+                null, null, null, "2026-03-10T22:00:00", null, null, null, null
+        ));
+
+        assertEquals(LocalDateTime.parse("2026-03-10T19:00:00"), event.getStartTime());
+        assertEquals(LocalDateTime.parse("2026-03-10T22:00:00"), event.getEndTime());
+    }
+
+    @Test
+    void updateEvent_endTimeBeforeExistingStart_throwsInvalidRequest() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        setId(club, 1L);
+        Event event = new Event(club, "OT",
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                LocalDateTime.parse("2026-03-10T20:00:00"),
+                null, true);
+        setId(event, 100L);
+        when(eventRepository.findById(100L)).thenReturn(Optional.of(event));
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> eventService.updateEvent(1L, 100L, new UpdateEventRequestDto(
+                        null, null, null, "2026-03-10T18:00:00", null, null, null, null
+                ))
+        );
+        assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
+    }
+
+    @Test
+    void event_defaultConstructor_initializesRegisterFeeToZero() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        Event event = new Event(club, "OT",
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                LocalDateTime.parse("2026-03-10T20:00:00"),
+                null, true);
+        assertEquals(BigDecimal.ZERO, event.getRegisterFee());
+        assertNull(event.getDescription());
+        assertNull(event.getDiscordChannelId());
+    }
+
+    @Test
     void updateEvent_whenEventNotFound_throwsNotFound() {
         when(eventRepository.findById(999L)).thenReturn(Optional.empty());
 
         AppException exception = assertThrows(
                 AppException.class,
-                () -> eventService.updateEvent(1L, 999L, new UpdateEventRequestDto(null, null, "강남", false))
+                () -> eventService.updateEvent(1L, 999L,
+                        new UpdateEventRequestDto(null, null, null, null, "강남", null, null, false))
         );
         assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
     }

@@ -53,7 +53,9 @@ class EventControllerTest {
     void createEvent_returnsCreatedEvent() throws Exception {
         when(eventService.createEvent(anyLong(), any())).thenReturn(
                 new EventDetailResponseDto(
-                        100L, 1L, "OT", "2026-03-10T19:00", null, true,
+                        100L, 1L, "OT", null,
+                        "2026-03-10T19:00", null, null, null,
+                        java.math.BigDecimal.ZERO, true,
                         List.of(new FormFieldResponseDto(1L, "TEXT", "학번", true, List.of()))
                 )
         );
@@ -79,7 +81,9 @@ class EventControllerTest {
         when(eventService.getEvents(anyInt(), anyInt())).thenReturn(
                 new EventPageResponseDto(
                         0, 10, 1, 1,
-                        List.of(new EventListItemDto(100L, "OT", "2026-03-10T19:00", "강남", true))
+                        List.of(new EventListItemDto(
+                                100L, "OT", "2026-03-10T19:00", "2026-03-10T22:00",
+                                "강남", java.math.BigDecimal.ZERO, true))
                 )
         );
 
@@ -92,7 +96,10 @@ class EventControllerTest {
     @Test
     void getEvent_returnsDetail() throws Exception {
         when(eventService.getEvent(100L)).thenReturn(
-                new EventDetailResponseDto(100L, 1L, "OT", "2026-03-10T19:00", "강남", true, List.of())
+                new EventDetailResponseDto(
+                        100L, 1L, "OT", null,
+                        "2026-03-10T19:00", "2026-03-10T22:00", "강남", null,
+                        java.math.BigDecimal.ZERO, true, List.of())
         );
 
         mockMvc.perform(get("/api/events/100"))
