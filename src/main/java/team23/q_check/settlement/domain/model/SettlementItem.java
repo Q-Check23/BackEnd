@@ -42,4 +42,61 @@ public class SettlementItem {
 
     @Column(name = "remind_count", nullable = false)
     private long remindCount = 0L;
+
+    protected SettlementItem() {
+    }
+
+    public SettlementItem(Settlement settlement, User user, BigDecimal amount) {
+        this.settlement = settlement;
+        this.user = user;
+        this.amount = amount;
+        this.status = SettlementItemStatus.UNPAID;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Settlement getSettlement() {
+        return settlement;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public SettlementItemStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public LocalDateTime getLastRemindedAt() {
+        return lastRemindedAt;
+    }
+
+    public long getRemindCount() {
+        return remindCount;
+    }
+
+    public void markAsPending() {
+        this.status = SettlementItemStatus.PENDING;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void markAsCompleted() {
+        this.status = SettlementItemStatus.COMPLETED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void recordReminder() {
+        this.lastRemindedAt = LocalDateTime.now();
+        this.remindCount += 1L;
+    }
 }
