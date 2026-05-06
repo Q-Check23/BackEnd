@@ -141,6 +141,17 @@ class AuthControllerTest {
     }
 
     @Test
+    void signup_missingAuthorizationHeader_returnsUnauthorized() throws Exception {
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "name": "김지윤", "nickname": "kimjyun", "email": "kim@example.com" }
+                                """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
     void signup_malformedAuthorizationHeader_returnsUnauthorized() throws Exception {
         mockMvc.perform(post("/auth/signup")
                         .header("Authorization", "signup-token")
