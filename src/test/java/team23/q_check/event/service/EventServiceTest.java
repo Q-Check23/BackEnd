@@ -18,8 +18,11 @@ import team23.q_check.event.domain.model.form.FormField;
 import team23.q_check.event.dto.CreateEventRequestDto;
 import team23.q_check.event.dto.FormFieldRequestDto;
 import team23.q_check.event.dto.UpdateEventRequestDto;
+import team23.q_check.event.domain.repository.AttendanceLogRepository;
 import team23.q_check.event.domain.repository.EventRepository;
+import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
+import team23.q_check.event.domain.repository.RegistrationRepository;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -39,6 +42,9 @@ class EventServiceTest {
 
     private EventRepository eventRepository;
     private FormFieldRepository formFieldRepository;
+    private RegistrationRepository registrationRepository;
+    private FormAnswerRepository formAnswerRepository;
+    private AttendanceLogRepository attendanceLogRepository;
     private ClubRepository clubRepository;
     private ClubAuthorizationService clubAuthorizationService;
     private EventService eventService;
@@ -47,11 +53,17 @@ class EventServiceTest {
     void setUp() {
         eventRepository = mock(EventRepository.class);
         formFieldRepository = mock(FormFieldRepository.class);
+        registrationRepository = mock(RegistrationRepository.class);
+        formAnswerRepository = mock(FormAnswerRepository.class);
+        attendanceLogRepository = mock(AttendanceLogRepository.class);
         clubRepository = mock(ClubRepository.class);
         clubAuthorizationService = mock(ClubAuthorizationService.class);
         eventService = new EventService(
                 eventRepository,
                 formFieldRepository,
+                registrationRepository,
+                formAnswerRepository,
+                attendanceLogRepository,
                 clubRepository,
                 clubAuthorizationService,
                 new ObjectMapper()
@@ -247,6 +259,52 @@ class EventServiceTest {
                 ))
         );
         assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
+    }
+
+    @Test
+    void deleteEvent_whenActiveRegistrationExists_throwsConflict() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        setId(club, 1L);
+        Event event = new Event(club, "OT",
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                LocalDateTime.parse("2026-03-10T20:00:00"),
+                null, true);
+        setId(event, 100L);
+        when(eventRepository.findById(100L)).thenReturn(Optional.of(event));
+        when(registrationRepository.existsByEvent_IdAndStatusIn(
+                org.mockito.ArgumentMatchers.eq(100L),
+                org.mockito.ArgumentMatchers.anyList()
+        )).thenReturn(true);
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> eventService.deleteEvent(1L, 100L)
+        );
+        assertEquals(ErrorCode.CONFLICT, exception.getErrorCode());
+    }
+
+    @Test
+    void deleteEvent_cascadesChildrenAndDeletesEvent() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        setId(club, 1L);
+        Event event = new Event(club, "OT",
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                LocalDateTime.parse("2026-03-10T20:00:00"),
+                null, true);
+        setId(event, 100L);
+        when(eventRepository.findById(100L)).thenReturn(Optional.of(event));
+        when(registrationRepository.existsByEvent_IdAndStatusIn(
+                org.mockito.ArgumentMatchers.eq(100L),
+                org.mockito.ArgumentMatchers.anyList()
+        )).thenReturn(false);
+
+        eventService.deleteEvent(1L, 100L);
+
+        verify(attendanceLogRepository).deleteAllByEvent_Id(100L);
+        verify(formAnswerRepository).deleteAllByRegistration_Event_Id(100L);
+        verify(registrationRepository).deleteAllByEvent_Id(100L);
+        verify(formFieldRepository).deleteAllByEvent_Id(100L);
+        verify(eventRepository).delete(event);
     }
 
     @Test

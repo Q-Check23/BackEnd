@@ -117,6 +117,50 @@ public class ClubService {
         );
     }
 
+    /**
+     * 본인이 클럽에서 탈퇴한다. 마지막 OWNER이면 거부 (먼저 위임 필요).
+     */
+    @Transactional
+    public void leaveClub(Long currentUserId, Long clubId) {
+        ClubMember membership = clubAuthorizationService.requireMembership(clubId, currentUserId);
+        if (membership.getRole() == ClubRole.OWNER && isLastOwner(clubId)) {
+            throw new AppException(ErrorCode.CONFLICT,
+                    "Last OWNER cannot leave the club. Transfer ownership first.");
+        }
+        clubMemberRepository.delete(membership);
+    }
+
+    /**
+     * 관리자(OWNER/ADMIN)가 다른 멤버를 클럽에서 제거한다.
+     * - ADMIN은 OWNER를 제거할 수 없다
+     * - 마지막 OWNER는 제거할 수 없다 (사실상 OWNER끼리만 가능한 상황에서만 차단)
+     * - 본인을 이 엔드포인트로 제거하는 것은 거부 (탈퇴는 /me 엔드포인트 사용)
+     */
+    @Transactional
+    public void removeClubMember(Long currentUserId, Long clubId, Long memberId) {
+        ClubMember operator = clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
+        ClubMember target = clubMemberRepository.findByIdAndClub_Id(memberId, clubId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Club member not found: " + memberId));
+
+        if (target.getId().equals(operator.getId())) {
+            throw new AppException(ErrorCode.INVALID_REQUEST,
+                    "Use the leave endpoint to remove yourself");
+        }
+        if (operator.getRole() == ClubRole.ADMIN && target.getRole() == ClubRole.OWNER) {
+            throw new AppException(ErrorCode.FORBIDDEN, "ADMIN cannot remove an OWNER");
+        }
+        if (target.getRole() == ClubRole.OWNER && isLastOwner(clubId)) {
+            throw new AppException(ErrorCode.CONFLICT,
+                    "Last OWNER cannot be removed. Transfer ownership first.");
+        }
+
+        clubMemberRepository.delete(target);
+    }
+
+    private boolean isLastOwner(Long clubId) {
+        return clubMemberRepository.countByClub_IdAndRole(clubId, ClubRole.OWNER) <= 1L;
+    }
+
     @Transactional
     public ClubMemberResponseDto updateClubMemberRole(
             Long currentUserId,

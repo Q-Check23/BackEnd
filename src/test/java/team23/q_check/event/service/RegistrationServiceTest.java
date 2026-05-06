@@ -202,6 +202,92 @@ class RegistrationServiceTest {
         assertEquals("한식", result.answers().get(0).value());
     }
 
+    @Test
+    void cancelMyRegistration_whenRegistered_transitionsToCanceled() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        Event event = new Event(club, "OT",
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(1).plusHours(2),
+                null, true);
+        User user = new User("dev-1", "kim");
+        setId(user, 1L);
+        Registration registration = new Registration(event, user, "token-1",
+                team23.q_check.event.domain.model.RegistrationStatus.REGISTERED);
+        setId(registration, 200L);
+
+        when(registrationRepository.findByEvent_IdAndUser_Id(100L, 1L)).thenReturn(java.util.Optional.of(registration));
+
+        registrationService.cancelMyRegistration(1L, 100L);
+
+        assertEquals(team23.q_check.event.domain.model.RegistrationStatus.CANCELED, registration.getStatus());
+    }
+
+    @Test
+    void cancelMyRegistration_whenAlreadyCheckedIn_throwsConflict() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        Event event = new Event(club, "OT",
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(1).plusHours(2),
+                null, true);
+        User user = new User("dev-1", "kim");
+        setId(user, 1L);
+        Registration registration = new Registration(event, user, "token-1",
+                team23.q_check.event.domain.model.RegistrationStatus.CHECKED_IN);
+        setId(registration, 200L);
+
+        when(registrationRepository.findByEvent_IdAndUser_Id(100L, 1L)).thenReturn(java.util.Optional.of(registration));
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> registrationService.cancelMyRegistration(1L, 100L)
+        );
+        assertEquals(ErrorCode.CONFLICT, exception.getErrorCode());
+    }
+
+    @Test
+    void cancelMyRegistration_whenAlreadyCanceled_throwsConflict() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        Event event = new Event(club, "OT",
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusDays(1).plusHours(2),
+                null, true);
+        User user = new User("dev-1", "kim");
+        setId(user, 1L);
+        Registration registration = new Registration(event, user, "token-1",
+                team23.q_check.event.domain.model.RegistrationStatus.CANCELED);
+        setId(registration, 200L);
+
+        when(registrationRepository.findByEvent_IdAndUser_Id(100L, 1L)).thenReturn(java.util.Optional.of(registration));
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> registrationService.cancelMyRegistration(1L, 100L)
+        );
+        assertEquals(ErrorCode.CONFLICT, exception.getErrorCode());
+    }
+
+    @Test
+    void cancelMyRegistration_whenEventStarted_throwsConflict() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null);
+        Event event = new Event(club, "OT",
+                LocalDateTime.now().minusHours(1),
+                LocalDateTime.now().plusHours(1),
+                null, true);
+        User user = new User("dev-1", "kim");
+        setId(user, 1L);
+        Registration registration = new Registration(event, user, "token-1",
+                team23.q_check.event.domain.model.RegistrationStatus.REGISTERED);
+        setId(registration, 200L);
+
+        when(registrationRepository.findByEvent_IdAndUser_Id(100L, 1L)).thenReturn(java.util.Optional.of(registration));
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> registrationService.cancelMyRegistration(1L, 100L)
+        );
+        assertEquals(ErrorCode.CONFLICT, exception.getErrorCode());
+    }
+
     private void setId(Object target, Long id) throws Exception {
         Field field = target.getClass().getDeclaredField("id");
         field.setAccessible(true);

@@ -9,4 +9,6 @@ public interface FormAnswerRepository extends JpaRepository<FormAnswer, Long> {
     List<FormAnswer> findAllByRegistration_Id(Long registrationId);
 
     List<FormAnswer> findAllByRegistration_Event_Id(Long eventId);
+
+    void deleteAllByRegistration_Event_Id(Long eventId);
 }

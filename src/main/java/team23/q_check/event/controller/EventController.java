@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -66,6 +68,19 @@ public class EventController {
         return ApiResponse.ok(eventService.getEvent(eventId));
     }
 
+    @Operation(summary = "행사 삭제 (club ADMIN 이상)",
+            description = "활성 등록자(REGISTERED·CHECKED_IN)가 있으면 409. " +
+                    "단순 비활성화는 PUT 으로 isActive=false 를 사용하세요.")
+    @DeleteMapping("/{eventId}")
+    public ApiResponse<Void> deleteEvent(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId
+    ) {
+        eventService.deleteEvent(currentUserId, eventId);
+        return ApiResponse.ok(null);
+    }
+
     @Operation(summary = "행사 수정 (club ADMIN 이상)")
     @PutMapping("/{eventId}")
     public ApiResponse<EventDetailResponseDto> updateEvent(
@@ -86,6 +101,19 @@ public class EventController {
             @RequestBody CreateRegistrationRequestDto request
     ) {
         return ApiResponse.ok(registrationService.createRegistration(currentUserId, eventId, request));
+    }
+
+    @Operation(summary = "내 참가 신청 취소",
+            description = "행사 시작 전, REGISTERED 상태일 때만 가능. " +
+                    "이미 CHECKED_IN이거나 CANCELED면 409.")
+    @PatchMapping("/{eventId}/registrations/me/cancel")
+    public ApiResponse<Void> cancelMyRegistration(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId
+    ) {
+        registrationService.cancelMyRegistration(currentUserId, eventId);
+        return ApiResponse.ok(null);
     }
 
     @Operation(summary = "내 참가 신청 조회")

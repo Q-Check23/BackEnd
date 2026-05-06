@@ -23,8 +23,12 @@ import team23.q_check.event.dto.EventPageResponseDto;
 import team23.q_check.event.dto.FormFieldRequestDto;
 import team23.q_check.event.dto.FormFieldResponseDto;
 import team23.q_check.event.dto.UpdateEventRequestDto;
+import team23.q_check.event.domain.model.RegistrationStatus;
+import team23.q_check.event.domain.repository.AttendanceLogRepository;
 import team23.q_check.event.domain.repository.EventRepository;
+import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
+import team23.q_check.event.domain.repository.RegistrationRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -36,6 +40,9 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final FormFieldRepository formFieldRepository;
+    private final RegistrationRepository registrationRepository;
+    private final FormAnswerRepository formAnswerRepository;
+    private final AttendanceLogRepository attendanceLogRepository;
     private final ClubRepository clubRepository;
     private final ClubAuthorizationService clubAuthorizationService;
     private final ObjectMapper objectMapper;
@@ -43,12 +50,18 @@ public class EventService {
     public EventService(
             EventRepository eventRepository,
             FormFieldRepository formFieldRepository,
+            RegistrationRepository registrationRepository,
+            FormAnswerRepository formAnswerRepository,
+            AttendanceLogRepository attendanceLogRepository,
             ClubRepository clubRepository,
             ClubAuthorizationService clubAuthorizationService,
             ObjectMapper objectMapper
     ) {
         this.eventRepository = eventRepository;
         this.formFieldRepository = formFieldRepository;
+        this.registrationRepository = registrationRepository;
+        this.formAnswerRepository = formAnswerRepository;
+        this.attendanceLogRepository = attendanceLogRepository;
         this.clubRepository = clubRepository;
         this.clubAuthorizationService = clubAuthorizationService;
         this.objectMapper = objectMapper;
@@ -120,6 +133,32 @@ public class EventService {
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Event not found: " + eventId));
         List<FormField> fields = formFieldRepository.findAllByEvent_IdOrderBySortOrderAsc(eventId);
         return toDetailDto(event, fields);
+    }
+
+    /**
+     * 행사를 hard delete 한다. 활성 등록자(REGISTERED 또는 CHECKED_IN)가 있으면 거부.
+     * 비활성화로 충분한 경우엔 PUT /api/events/{id} 의 isActive=false 를 사용할 것.
+     */
+    @Transactional
+    public void deleteEvent(Long currentUserId, Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Event not found: " + eventId));
+        clubAuthorizationService.requireAdminOrOwner(event.getClub().getId(), currentUserId);
+
+        boolean hasActiveRegistrations = registrationRepository.existsByEvent_IdAndStatusIn(
+                eventId,
+                List.of(RegistrationStatus.REGISTERED, RegistrationStatus.CHECKED_IN)
+        );
+        if (hasActiveRegistrations) {
+            throw new AppException(ErrorCode.CONFLICT,
+                    "Cannot delete an event with active registrations. Set isActive=false instead.");
+        }
+
+        attendanceLogRepository.deleteAllByEvent_Id(eventId);
+        formAnswerRepository.deleteAllByRegistration_Event_Id(eventId);
+        registrationRepository.deleteAllByEvent_Id(eventId);
+        formFieldRepository.deleteAllByEvent_Id(eventId);
+        eventRepository.delete(event);
     }
 
     @Transactional
