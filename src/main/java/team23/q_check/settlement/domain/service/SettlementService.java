@@ -15,10 +15,12 @@ import team23.q_check.settlement.domain.model.Settlement;
 import team23.q_check.settlement.domain.model.SettlementItem;
 import team23.q_check.settlement.domain.repository.SettlementItemRepository;
 import team23.q_check.settlement.domain.repository.SettlementRepository;
+import team23.q_check.settlement.domain.model.SettlementItemStatus;
 import team23.q_check.settlement.dto.CreateSettlementRequestDto;
 import team23.q_check.settlement.dto.SettlementGroupRequestDto;
 import team23.q_check.settlement.dto.SettlementItemResponseDto;
 import team23.q_check.settlement.dto.SettlementResponseDto;
+import team23.q_check.settlement.dto.SettlementSummaryDto;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -82,6 +84,42 @@ public class SettlementService {
         }
 
         return toDetailDto(settlement, settlementItemRepository.findAllBySettlement_Id(settlement.getId()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SettlementSummaryDto> getEventSettlements(Long currentUserId, Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Event not found: " + eventId));
+        clubAuthorizationService.requireAdminOrOwner(event.getClub().getId(), currentUserId);
+
+        List<Settlement> settlements = settlementRepository.findAllByEvent_IdOrderByCreatedAtDesc(eventId);
+        return settlements.stream()
+                .map(settlement -> {
+                    List<SettlementItem> items = settlementItemRepository.findAllBySettlement_Id(settlement.getId());
+                    long completed = items.stream()
+                            .filter(item -> item.getStatus() == SettlementItemStatus.COMPLETED)
+                            .count();
+                    return new SettlementSummaryDto(
+                            settlement.getId(),
+                            settlement.getEvent().getId(),
+                            settlement.getTitle(),
+                            settlement.getTotalAmount(),
+                            settlement.getCreatedAt().toString(),
+                            items.size(),
+                            completed
+                    );
+                })
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public SettlementResponseDto getSettlement(Long currentUserId, Long settlementId) {
+        Settlement settlement = settlementRepository.findById(settlementId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Settlement not found: " + settlementId));
+        clubAuthorizationService.requireAdminOrOwner(settlement.getEvent().getClub().getId(), currentUserId);
+
+        List<SettlementItem> items = settlementItemRepository.findAllBySettlement_Id(settlementId);
+        return toDetailDto(settlement, items);
     }
 
     private void validateCreateRequest(CreateSettlementRequestDto request) {
