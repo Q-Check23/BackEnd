@@ -18,8 +18,11 @@ import team23.q_check.event.domain.model.form.FormField;
 import team23.q_check.event.dto.CreateEventRequestDto;
 import team23.q_check.event.dto.FormFieldRequestDto;
 import team23.q_check.event.dto.UpdateEventRequestDto;
+import team23.q_check.event.domain.repository.AttendanceLogRepository;
 import team23.q_check.event.domain.repository.EventRepository;
+import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
+import team23.q_check.event.domain.repository.RegistrationRepository;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -39,6 +42,9 @@ class EventServiceTest {
 
     private EventRepository eventRepository;
     private FormFieldRepository formFieldRepository;
+    private RegistrationRepository registrationRepository;
+    private FormAnswerRepository formAnswerRepository;
+    private AttendanceLogRepository attendanceLogRepository;
     private ClubRepository clubRepository;
     private ClubAuthorizationService clubAuthorizationService;
     private EventService eventService;
@@ -47,11 +53,17 @@ class EventServiceTest {
     void setUp() {
         eventRepository = mock(EventRepository.class);
         formFieldRepository = mock(FormFieldRepository.class);
+        registrationRepository = mock(RegistrationRepository.class);
+        formAnswerRepository = mock(FormAnswerRepository.class);
+        attendanceLogRepository = mock(AttendanceLogRepository.class);
         clubRepository = mock(ClubRepository.class);
         clubAuthorizationService = mock(ClubAuthorizationService.class);
         eventService = new EventService(
                 eventRepository,
                 formFieldRepository,
+                registrationRepository,
+                formAnswerRepository,
+                attendanceLogRepository,
                 clubRepository,
                 clubAuthorizationService,
                 new ObjectMapper()

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,6 +65,19 @@ public class EventController {
     @GetMapping("/{eventId}")
     public ApiResponse<EventDetailResponseDto> getEvent(@PathVariable Long eventId) {
         return ApiResponse.ok(eventService.getEvent(eventId));
+    }
+
+    @Operation(summary = "행사 삭제 (club ADMIN 이상)",
+            description = "활성 등록자(REGISTERED·CHECKED_IN)가 있으면 409. " +
+                    "단순 비활성화는 PUT 으로 isActive=false 를 사용하세요.")
+    @DeleteMapping("/{eventId}")
+    public ApiResponse<Void> deleteEvent(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId
+    ) {
+        eventService.deleteEvent(currentUserId, eventId);
+        return ApiResponse.ok(null);
     }
 
     @Operation(summary = "행사 수정 (club ADMIN 이상)")

@@ -21,4 +21,8 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     @Query("SELECT r.event.id FROM Registration r WHERE r.user.id = :userId AND r.status IN :statuses")
     List<Long> findEventIdsByUserIdAndStatuses(@Param("userId") Long userId,
                                                @Param("statuses") List<RegistrationStatus> statuses);
+
+    boolean existsByEvent_IdAndStatusIn(Long eventId, List<RegistrationStatus> statuses);
+
+    void deleteAllByEvent_Id(Long eventId);
 }
