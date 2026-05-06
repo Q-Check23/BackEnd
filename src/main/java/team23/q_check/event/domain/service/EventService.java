@@ -98,7 +98,9 @@ public class EventService {
                         event.getId(),
                         event.getTitle(),
                         event.getStartTime().toString(),
+                        event.getEndTime() == null ? null : event.getEndTime().toString(),
                         event.getLocation(),
+                        event.getRegisterFee(),
                         event.getIsActive()
                 ))
                 .toList();
@@ -194,8 +196,12 @@ public class EventService {
                 event.getId(),
                 event.getClub().getId(),
                 event.getTitle(),
+                event.getDescription(),
                 event.getStartTime().toString(),
+                event.getEndTime() == null ? null : event.getEndTime().toString(),
                 event.getLocation(),
+                event.getDiscordChannelId(),
+                event.getRegisterFee(),
                 event.getIsActive(),
                 fieldDtos
         );
