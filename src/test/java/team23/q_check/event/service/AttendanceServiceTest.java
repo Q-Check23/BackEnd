@@ -6,6 +6,9 @@ import team23.q_check.club.domain.model.Club;
 import team23.q_check.club.domain.service.ClubAuthorizationService;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
+import org.mockito.ArgumentCaptor;
+import team23.q_check.event.domain.model.AttendanceLog;
+import team23.q_check.event.domain.model.AttendanceMethod;
 import team23.q_check.event.domain.model.Event;
 import team23.q_check.event.domain.model.Registration;
 import team23.q_check.event.domain.model.RegistrationStatus;
@@ -82,6 +85,73 @@ class AttendanceServiceTest {
                 () -> attendanceService.checkIn(1L, " ")
         );
         assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
+    }
+
+    @Test
+    void manualCheckIn_success_updatesStatusAndSavesLogWithMethodManual() {
+        Registration registration = createRegistration(RegistrationStatus.REGISTERED);
+        User checker = new User("dev-admin", "admin");
+        checker.updateRealName("관리자");
+
+        when(registrationRepository.findById(200L)).thenReturn(Optional.of(registration));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(checker));
+
+        var result = attendanceService.manualCheckIn(1L, 200L);
+
+        assertEquals(RegistrationStatus.CHECKED_IN, registration.getStatus());
+        assertEquals(200L, result.registrationId());
+        assertEquals("관리자", result.username());
+
+        ArgumentCaptor<AttendanceLog> captor = ArgumentCaptor.forClass(AttendanceLog.class);
+        verify(attendanceLogRepository).save(captor.capture());
+        assertEquals(AttendanceMethod.MANUAL, captor.getValue().getMethod());
+    }
+
+    @Test
+    void manualCheckIn_whenAlreadyCheckedIn_throwsConflict() {
+        Registration registration = createRegistration(RegistrationStatus.CHECKED_IN);
+        when(registrationRepository.findById(200L)).thenReturn(Optional.of(registration));
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> attendanceService.manualCheckIn(1L, 200L)
+        );
+        assertEquals(ErrorCode.CONFLICT, exception.getErrorCode());
+    }
+
+    @Test
+    void manualCheckIn_whenRegistrationIdMissing_throwsBadRequest() {
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> attendanceService.manualCheckIn(1L, null)
+        );
+        assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
+    }
+
+    @Test
+    void manualCheckIn_whenRegistrationNotFound_throwsNotFound() {
+        when(registrationRepository.findById(999L)).thenReturn(Optional.empty());
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> attendanceService.manualCheckIn(1L, 999L)
+        );
+        assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void manualCheckIn_whenNotAdmin_throwsForbidden() {
+        Registration registration = createRegistration(RegistrationStatus.REGISTERED);
+        when(registrationRepository.findById(200L)).thenReturn(Optional.of(registration));
+        doThrow(new AppException(ErrorCode.FORBIDDEN, "forbidden"))
+                .when(clubAuthorizationService).requireAdminOrOwner(any(), eq(99L));
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> attendanceService.manualCheckIn(99L, 200L)
+        );
+        assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
+        verify(attendanceLogRepository, never()).save(any());
     }
 
     private Registration createRegistration(RegistrationStatus status) {
