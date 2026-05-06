@@ -40,10 +40,6 @@ public class ClubService {
         this.clubAuthorizationService = clubAuthorizationService;
     }
 
-    public ClubResponseDto getSampleClub() {
-        return new ClubResponseDto(1L, "UMC", "University MakeUs Challenge club");
-    }
-
     @Transactional
     public ClubResponseDto createClub(Long currentUserId, CreateClubRequestDto request) {
         validateCreateRequest(request);

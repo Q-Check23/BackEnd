@@ -113,9 +113,4 @@ public class ClubController {
         return ApiResponse.ok(null);
     }
 
-    @Operation(summary = "샘플 동아리 조회")
-    @GetMapping("/sample")
-    public ApiResponse<ClubResponseDto> getSampleClub() {
-        return ApiResponse.ok(clubService.getSampleClub());
-    }
 }
