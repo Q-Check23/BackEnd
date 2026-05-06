@@ -26,6 +26,7 @@ import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
 import team23.q_check.event.domain.repository.RegistrationRepository;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -89,6 +90,30 @@ public class RegistrationService {
         }
 
         return new CreateRegistrationResponseDto(registration.getId(), registration.getQrToken());
+    }
+
+    /**
+     * 본인의 참가 신청을 취소한다. 행사 시작 전, REGISTERED 상태일 때만 가능.
+     * form_answers는 히스토리 보존을 위해 그대로 둔다.
+     */
+    @Transactional
+    public void cancelMyRegistration(Long currentUserId, Long eventId) {
+        Registration registration = registrationRepository.findByEvent_IdAndUser_Id(eventId, currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Registration not found"));
+
+        if (registration.getStatus() == RegistrationStatus.CHECKED_IN) {
+            throw new AppException(ErrorCode.CONFLICT, "Cannot cancel a checked-in registration");
+        }
+        if (registration.getStatus() == RegistrationStatus.CANCELED) {
+            throw new AppException(ErrorCode.CONFLICT, "Registration is already canceled");
+        }
+
+        LocalDateTime startTime = registration.getEvent().getStartTime();
+        if (startTime != null && !LocalDateTime.now().isBefore(startTime)) {
+            throw new AppException(ErrorCode.CONFLICT, "Cannot cancel after event has started");
+        }
+
+        registration.updateStatus(RegistrationStatus.CANCELED);
     }
 
     @Transactional(readOnly = true)
