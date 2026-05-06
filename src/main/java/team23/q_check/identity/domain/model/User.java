@@ -32,12 +32,6 @@ public class User {
     protected User() {
     }
 
-    /** 기존 코드 호환용 */
-    public User(String discordId, String username) {
-        this.discordId = discordId;
-        this.username = username;
-    }
-
     /** Discord OAuth2 회원가입 */
     public User(String discordId, String email, String username, String realName) {
         this.discordId = discordId;
