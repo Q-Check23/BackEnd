@@ -25,6 +25,7 @@ import team23.q_check.event.dto.FormFieldResponseDto;
 import team23.q_check.event.dto.UpdateEventRequestDto;
 import team23.q_check.event.domain.model.RegistrationStatus;
 import team23.q_check.event.domain.repository.AttendanceLogRepository;
+import team23.q_check.event.domain.repository.EventPhotoRepository;
 import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
@@ -43,6 +44,7 @@ public class EventService {
     private final RegistrationRepository registrationRepository;
     private final FormAnswerRepository formAnswerRepository;
     private final AttendanceLogRepository attendanceLogRepository;
+    private final EventPhotoRepository eventPhotoRepository;
     private final ClubRepository clubRepository;
     private final ClubAuthorizationService clubAuthorizationService;
     private final ObjectMapper objectMapper;
@@ -53,6 +55,7 @@ public class EventService {
             RegistrationRepository registrationRepository,
             FormAnswerRepository formAnswerRepository,
             AttendanceLogRepository attendanceLogRepository,
+            EventPhotoRepository eventPhotoRepository,
             ClubRepository clubRepository,
             ClubAuthorizationService clubAuthorizationService,
             ObjectMapper objectMapper
@@ -62,6 +65,7 @@ public class EventService {
         this.registrationRepository = registrationRepository;
         this.formAnswerRepository = formAnswerRepository;
         this.attendanceLogRepository = attendanceLogRepository;
+        this.eventPhotoRepository = eventPhotoRepository;
         this.clubRepository = clubRepository;
         this.clubAuthorizationService = clubAuthorizationService;
         this.objectMapper = objectMapper;
@@ -158,6 +162,7 @@ public class EventService {
         formAnswerRepository.deleteAllByRegistration_Event_Id(eventId);
         registrationRepository.deleteAllByEvent_Id(eventId);
         formFieldRepository.deleteAllByEvent_Id(eventId);
+        eventPhotoRepository.deleteAllByEvent_Id(eventId);
         eventRepository.delete(event);
     }
 

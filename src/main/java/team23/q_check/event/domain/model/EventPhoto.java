@@ -24,6 +24,35 @@ public class EventPhoto {
     @Column(nullable = false, length = 255)
     private String photoUrl;
 
-    @Column(nullable = false, length = 255)
-    private LocalDateTime createdAt =  LocalDateTime.now(ZoneOffset.UTC);
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
+
+    protected EventPhoto() {
+    }
+
+    public EventPhoto(Event event, User uploader, String photoUrl) {
+        this.event = event;
+        this.uploader = uploader;
+        this.photoUrl = photoUrl;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public User getUploader() {
+        return uploader;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }
