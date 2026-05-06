@@ -122,6 +122,46 @@ public class SettlementService {
         return toDetailDto(settlement, items);
     }
 
+    /** 본인이 송금했음을 신고: UNPAID → PENDING. */
+    @Transactional
+    public SettlementItemResponseDto markAsPending(Long currentUserId, Long itemId) {
+        SettlementItem item = settlementItemRepository.findByIdAndUser_Id(itemId, currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Settlement item not found for current user"));
+        if (item.getStatus() != SettlementItemStatus.UNPAID) {
+            throw new AppException(ErrorCode.CONFLICT, "Only UNPAID items can be marked as PENDING");
+        }
+        item.markAsPending();
+        return toItemDto(item);
+    }
+
+    /** 관리자가 송금을 확인: PENDING → COMPLETED. */
+    @Transactional
+    public SettlementItemResponseDto confirmAsCompleted(Long currentUserId, Long itemId) {
+        SettlementItem item = settlementItemRepository.findById(itemId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Settlement item not found: " + itemId));
+        clubAuthorizationService.requireAdminOrOwner(
+                item.getSettlement().getEvent().getClub().getId(), currentUserId);
+
+        if (item.getStatus() != SettlementItemStatus.PENDING) {
+            throw new AppException(ErrorCode.CONFLICT, "Only PENDING items can be confirmed as COMPLETED");
+        }
+        item.markAsCompleted();
+        return toItemDto(item);
+    }
+
+    private SettlementItemResponseDto toItemDto(SettlementItem item) {
+        return new SettlementItemResponseDto(
+                item.getId(),
+                item.getUser().getId(),
+                item.getUser().getUsername(),
+                item.getAmount(),
+                item.getStatus().name(),
+                item.getUpdatedAt() == null ? null : item.getUpdatedAt().toString(),
+                item.getLastRemindedAt() == null ? null : item.getLastRemindedAt().toString(),
+                item.getRemindCount()
+        );
+    }
+
     private void validateCreateRequest(CreateSettlementRequestDto request) {
         if (request == null) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "Request body is required");
@@ -178,18 +218,7 @@ public class SettlementService {
     }
 
     private SettlementResponseDto toDetailDto(Settlement settlement, List<SettlementItem> items) {
-        List<SettlementItemResponseDto> itemDtos = items.stream()
-                .map(item -> new SettlementItemResponseDto(
-                        item.getId(),
-                        item.getUser().getId(),
-                        item.getUser().getUsername(),
-                        item.getAmount(),
-                        item.getStatus().name(),
-                        item.getUpdatedAt() == null ? null : item.getUpdatedAt().toString(),
-                        item.getLastRemindedAt() == null ? null : item.getLastRemindedAt().toString(),
-                        item.getRemindCount()
-                ))
-                .toList();
+        List<SettlementItemResponseDto> itemDtos = items.stream().map(this::toItemDto).toList();
 
         BigDecimal allocated = items.stream()
                 .map(SettlementItem::getAmount)
