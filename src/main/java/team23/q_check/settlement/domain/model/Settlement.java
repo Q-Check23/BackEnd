@@ -38,4 +38,53 @@ public class Settlement {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now(ZoneOffset.UTC);
+
+    protected Settlement() {
+    }
+
+    public Settlement(
+            Event event,
+            User createdBy,
+            String title,
+            BigDecimal totalAmount,
+            String receiptImageUrl
+    ) {
+        this.event = event;
+        this.createdBy = createdBy;
+        this.title = title;
+        this.totalAmount = totalAmount;
+        this.receiptImageUrl = receiptImageUrl;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Event getEvent() {
+        return event;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public String getReceiptImageUrl() {
+        return receiptImageUrl;
+    }
+
+    public String getOcrData() {
+        return ocrData;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }
