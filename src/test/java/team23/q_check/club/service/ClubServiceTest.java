@@ -46,7 +46,7 @@ class ClubServiceTest {
 
     @Test
     void createClub_savesClubAndOwnerMembership() throws Exception {
-        User currentUser = new User("dev-1", "owner");
+        User currentUser = new User("dev-1", null, "owner", null);
         setId(currentUser, 1L);
 
         when(clubRepository.existsByDiscordGuildId("guild-1")).thenReturn(false);
@@ -87,7 +87,7 @@ class ClubServiceTest {
     void leaveClub_lastOwner_throwsConflict() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User owner = new User("dev-1", "owner");
+        User owner = new User("dev-1", null, "owner", null);
         setId(owner, 1L);
         ClubMember ownerMembership = new ClubMember(club, owner, ClubRole.OWNER);
         setId(ownerMembership, 10L);
@@ -107,7 +107,7 @@ class ClubServiceTest {
     void leaveClub_memberLeavesSuccessfully() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User member = new User("dev-2", "member");
+        User member = new User("dev-2", null, "member", null);
         setId(member, 2L);
         ClubMember membership = new ClubMember(club, member, ClubRole.MEMBER);
         setId(membership, 11L);
@@ -123,7 +123,7 @@ class ClubServiceTest {
     void leaveClub_ownerWhenAnotherOwnerExists_succeeds() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User owner = new User("dev-1", "owner");
+        User owner = new User("dev-1", null, "owner", null);
         setId(owner, 1L);
         ClubMember ownerMembership = new ClubMember(club, owner, ClubRole.OWNER);
         setId(ownerMembership, 10L);
@@ -140,9 +140,9 @@ class ClubServiceTest {
     void removeClubMember_adminCannotRemoveOwner() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User admin = new User("dev-1", "admin");
+        User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
-        User owner = new User("dev-2", "owner");
+        User owner = new User("dev-2", null, "owner", null);
         setId(owner, 2L);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
         setId(adminMembership, 10L);
@@ -164,7 +164,7 @@ class ClubServiceTest {
     void removeClubMember_cannotRemoveSelf() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User admin = new User("dev-1", "admin");
+        User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
         setId(adminMembership, 10L);
@@ -183,9 +183,9 @@ class ClubServiceTest {
     void removeClubMember_lastOwnerByOwner_throwsConflict() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User owner1 = new User("dev-1", "owner1");
+        User owner1 = new User("dev-1", null, "owner1", null);
         setId(owner1, 1L);
-        User owner2 = new User("dev-2", "owner2");
+        User owner2 = new User("dev-2", null, "owner2", null);
         setId(owner2, 2L);
         ClubMember owner1Membership = new ClubMember(club, owner1, ClubRole.OWNER);
         setId(owner1Membership, 10L);
@@ -207,9 +207,9 @@ class ClubServiceTest {
     void removeClubMember_adminRemovesMemberSuccessfully() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User admin = new User("dev-1", "admin");
+        User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
-        User member = new User("dev-2", "member");
+        User member = new User("dev-2", null, "member", null);
         setId(member, 2L);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
         setId(adminMembership, 10L);
@@ -228,9 +228,9 @@ class ClubServiceTest {
     void updateClubMemberRole_adminCannotAssignOwner() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User admin = new User("dev-1", "admin");
+        User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
-        User target = new User("dev-2", "target");
+        User target = new User("dev-2", null, "target", null);
         setId(target, 7L);
 
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);

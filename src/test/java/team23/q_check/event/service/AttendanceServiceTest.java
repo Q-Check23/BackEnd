@@ -63,7 +63,7 @@ class AttendanceServiceTest {
     @Test
     void checkIn_success_updatesStatusAndSavesLog() {
         Registration registration = createRegistration(RegistrationStatus.REGISTERED);
-        User checker = new User("dev-admin", "admin");
+        User checker = new User("dev-admin", null, "admin", null);
         checker.updateRealName("관리자");
 
         when(registrationRepository.findByQrToken("token-1")).thenReturn(Optional.of(registration));
@@ -90,7 +90,7 @@ class AttendanceServiceTest {
     @Test
     void manualCheckIn_success_updatesStatusAndSavesLogWithMethodManual() {
         Registration registration = createRegistration(RegistrationStatus.REGISTERED);
-        User checker = new User("dev-admin", "admin");
+        User checker = new User("dev-admin", null, "admin", null);
         checker.updateRealName("관리자");
 
         when(registrationRepository.findById(200L)).thenReturn(Optional.of(registration));
@@ -164,7 +164,7 @@ class AttendanceServiceTest {
                 null,
                 true
         );
-        User user = new User("dev-user", "member");
+        User user = new User("dev-user", null, "member", null);
         Registration registration = new Registration(event, user, "token-1", status);
         try {
             var idField = Registration.class.getDeclaredField("id");

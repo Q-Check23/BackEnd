@@ -207,7 +207,7 @@ class EventPhotoServiceTest {
     }
 
     private User newUser(Long id, String username) throws Exception {
-        User user = new User("dev-" + id, username);
+        User user = new User("dev-" + id, null, username, null);
         setId(user, id);
         return user;
     }

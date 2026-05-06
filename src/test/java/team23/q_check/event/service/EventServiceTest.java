@@ -78,7 +78,7 @@ class EventServiceTest {
     void createEvent_withSelectField_savesAndReturnsDetail() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User admin = new User("dev-1", "admin");
+        User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
 
@@ -119,7 +119,7 @@ class EventServiceTest {
     @Test
     void createEvent_selectWithoutOptions_throwsInvalidRequest() {
         Club club = new Club("UMC", "desc", "guild-1", null);
-        User admin = new User("dev-1", "admin");
+        User admin = new User("dev-1", null, "admin", null);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
         when(clubRepository.existsById(1L)).thenReturn(true);
         when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
@@ -148,7 +148,7 @@ class EventServiceTest {
     void createEvent_propagatesAllFieldsToEntity() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        User admin = new User("dev-1", "admin");
+        User admin = new User("dev-1", null, "admin", null);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
         when(clubRepository.existsById(1L)).thenReturn(true);
         when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
@@ -192,7 +192,7 @@ class EventServiceTest {
     void createEvent_endTimeBeforeStart_throwsInvalidRequest() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        ClubMember adminMembership = new ClubMember(club, new User("dev-1", "admin"), ClubRole.ADMIN);
+        ClubMember adminMembership = new ClubMember(club, new User("dev-1", null, "admin", null), ClubRole.ADMIN);
         when(clubRepository.existsById(1L)).thenReturn(true);
         when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
 
@@ -211,7 +211,7 @@ class EventServiceTest {
     void createEvent_negativeRegisterFee_throwsInvalidRequest() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null);
         setId(club, 1L);
-        ClubMember adminMembership = new ClubMember(club, new User("dev-1", "admin"), ClubRole.ADMIN);
+        ClubMember adminMembership = new ClubMember(club, new User("dev-1", null, "admin", null), ClubRole.ADMIN);
         when(clubRepository.existsById(1L)).thenReturn(true);
         when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
 
