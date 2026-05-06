@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -85,6 +86,31 @@ public class ClubController {
             @RequestBody UpdateClubMemberRoleRequestDto request
     ) {
         return ApiResponse.ok(clubService.updateClubMemberRole(currentUserId, clubId, memberId, request));
+    }
+
+    @Operation(summary = "클럽 탈퇴 (본인)",
+            description = "본인이 마지막 OWNER이면 409 (먼저 다른 사람에게 OWNER 위임 필요).")
+    @DeleteMapping("/{clubId}/members/me")
+    public ApiResponse<Void> leaveClub(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId
+    ) {
+        clubService.leaveClub(currentUserId, clubId);
+        return ApiResponse.ok(null);
+    }
+
+    @Operation(summary = "클럽 멤버 제거 (OWNER/ADMIN)",
+            description = "ADMIN은 OWNER를 제거할 수 없으며, 본인을 제거하려면 /me 엔드포인트를 사용해야 합니다.")
+    @DeleteMapping("/{clubId}/members/{memberId}")
+    public ApiResponse<Void> removeClubMember(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId,
+            @PathVariable Long memberId
+    ) {
+        clubService.removeClubMember(currentUserId, clubId, memberId);
+        return ApiResponse.ok(null);
     }
 
     @Operation(summary = "샘플 동아리 조회")

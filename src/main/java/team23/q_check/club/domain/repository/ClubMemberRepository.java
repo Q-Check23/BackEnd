@@ -2,6 +2,7 @@ package team23.q_check.club.domain.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import team23.q_check.club.domain.model.ClubMember;
+import team23.q_check.club.domain.model.ClubRole;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,4 +17,6 @@ public interface ClubMemberRepository extends JpaRepository<ClubMember, Long> {
     boolean existsByClub_IdAndUser_Id(Long clubId, Long userId);
 
     Optional<ClubMember> findByIdAndClub_Id(Long memberId, Long clubId);
+
+    long countByClub_IdAndRole(Long clubId, ClubRole role);
 }
