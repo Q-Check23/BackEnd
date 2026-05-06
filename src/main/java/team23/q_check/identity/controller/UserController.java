@@ -8,12 +8,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.identity.dto.MyUserResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
+import team23.q_check.identity.dto.UserSearchResultDto;
 import team23.q_check.identity.domain.service.UserService;
+
+import java.util.List;
 
 @Tag(name = "User", description = "User API")
 @SecurityRequirement(name = "X-USER-ID")
@@ -44,5 +48,19 @@ public class UserController {
             @RequestBody UpdateMyUserRequestDto request
     ) {
         return ApiResponse.ok(userService.updateMyUser(currentUserId, request));
+    }
+
+    @Operation(
+            summary = "사용자 검색",
+            description = "닉네임(부분일치) 또는 이메일(정확매치)로 사용자를 검색합니다. " +
+                    "둘 중 하나는 반드시 입력해야 하며, 결과에는 이메일이 포함되지 않습니다. " +
+                    "닉네임 검색은 최대 20명까지 반환합니다."
+    )
+    @GetMapping("/search")
+    public ApiResponse<List<UserSearchResultDto>> searchUsers(
+            @Parameter(description = "닉네임 부분일치 (대소문자 무시)") @RequestParam(required = false) String nickname,
+            @Parameter(description = "이메일 정확매치") @RequestParam(required = false) String email
+    ) {
+        return ApiResponse.ok(userService.searchUsers(nickname, email));
     }
 }
