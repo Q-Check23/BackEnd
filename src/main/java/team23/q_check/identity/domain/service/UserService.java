@@ -7,7 +7,6 @@ import team23.q_check.common.error.ErrorCode;
 import team23.q_check.identity.domain.model.User;
 import team23.q_check.identity.dto.MyUserResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
-import team23.q_check.identity.dto.UserResponseDto;
 import team23.q_check.identity.dto.UserSearchResultDto;
 import team23.q_check.identity.domain.repository.UserRepository;
 
@@ -20,10 +19,6 @@ public class UserService {
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-
-    public UserResponseDto getSampleUser() {
-        return new UserResponseDto(7L, "123456789012345678", "kimjyun");
     }
 
     @Transactional(readOnly = true)
