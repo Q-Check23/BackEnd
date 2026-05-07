@@ -50,6 +50,10 @@ dependencies {
 
 	// 구조화된 JSON 로그 (Loki/Grafana 수집용)
 	implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+	// Monitoring: Actuator + Prometheus metrics
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {
