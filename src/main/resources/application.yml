@@ -7,6 +7,13 @@ spring:
     hibernate:
       # 데이터베이스의 스키마와 jpa 엔티티가 불일치할때 애플리케이션 실행 중단
       ddl-auto: validate
+    properties:
+      hibernate:
+        # 1초 넘는 쿼리는 WARN으로 남겨 슬로우 쿼리 추적
+        session:
+          events:
+            log:
+              LOG_QUERIES_SLOWER_THAN_MS: 1000
 
   flyway:
     enabled: true
@@ -19,6 +26,8 @@ spring:
       connectionTimeout: '30000'
       maximum-pool-size: '10'
       max-lifetime: '1800000'
+      # 5초 동안 반환 안 된 커넥션은 WARN — 트랜잭션 누수 즉시 감지
+      leak-detection-threshold: '5000'
     url: ${LOCAL_MYSQL_URL}               # ex) jdbc:mysql://localhost:3306/qcheck
     username: ${LOCAL_MYSQL_USER}         # MySQL 사용자명
     password: ${LOCAL_MYSQL_PASSWORD}     # MySQL 비밀번호

@@ -1,5 +1,7 @@
 package team23.q_check.common.error;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,11 +18,19 @@ import java.nio.file.AccessDeniedException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException e) {
+        ErrorCode code = e.getErrorCode();
+        if (code.getHttpStatus().is5xxServerError()) {
+            log.error("app.exception code={} msg={}", code.getCode(), e.getMessage(), e);
+        } else {
+            log.warn("app.exception code={} msg={}", code.getCode(), e.getMessage());
+        }
         return ResponseEntity
-                .status(e.getErrorCode().getHttpStatus())
-                .body(ApiResponse.error(e.getErrorCode(), e.getMessage()));
+                .status(code.getHttpStatus())
+                .body(ApiResponse.error(code, e.getMessage()));
     }
 
     @ExceptionHandler({
@@ -31,6 +41,7 @@ public class GlobalExceptionHandler {
             IllegalArgumentException.class
     })
     public ResponseEntity<ApiResponse<Void>> handleInvalidRequest(Exception e) {
+        log.info("request.invalid type={} msg={}", e.getClass().getSimpleName(), e.getMessage());
         return ResponseEntity
                 .status(ErrorCode.INVALID_REQUEST.getHttpStatus())
                 .body(ApiResponse.error(ErrorCode.INVALID_REQUEST, e.getMessage()));
@@ -45,6 +56,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = HttpHeaders.AUTHORIZATION.equalsIgnoreCase(e.getHeaderName())
                 ? ErrorCode.UNAUTHORIZED
                 : ErrorCode.INVALID_REQUEST;
+        log.info("request.missing_header header={} code={}", e.getHeaderName(), errorCode.getCode());
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(ApiResponse.error(errorCode, e.getMessage()));
@@ -52,6 +64,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDenied(AccessDeniedException e) {
+        log.warn("access.denied msg={}", e.getMessage());
         return ResponseEntity
                 .status(ErrorCode.FORBIDDEN.getHttpStatus())
                 .body(ApiResponse.error(ErrorCode.FORBIDDEN, e.getMessage()));
@@ -59,6 +72,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+        log.error("unhandled.exception type={} msg={}", e.getClass().getName(), e.getMessage(), e);
         return ResponseEntity
                 .status(ErrorCode.INTERNAL_ERROR.getHttpStatus())
                 .body(ApiResponse.error(ErrorCode.INTERNAL_ERROR, e.getMessage()));

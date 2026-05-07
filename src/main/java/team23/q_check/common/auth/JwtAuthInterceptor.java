@@ -5,11 +5,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
+import team23.q_check.common.log.RequestLoggingFilter;
 import team23.q_check.common.response.ApiResponse;
 
 import java.io.IOException;
@@ -43,7 +45,8 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
         try {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                jwtService.extractAccessTokenUserId(authHeader.substring(7)); // access token만 허용
+                Long userId = jwtService.extractAccessTokenUserId(authHeader.substring(7)); // access token만 허용
+                MDC.put(RequestLoggingFilter.MDC_USER_ID, String.valueOf(userId));
                 return true;
             }
 
@@ -52,20 +55,25 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
                 String devHeader = request.getHeader("X-USER-ID");
                 if (devHeader != null && !devHeader.isBlank()) {
                     try {
-                        Long.parseLong(devHeader);
+                        Long userId = Long.parseLong(devHeader);
+                        MDC.put(RequestLoggingFilter.MDC_USER_ID, String.valueOf(userId));
+                        log.warn("auth.dev_fallback used userId={} path={} — 프로덕션이라면 dev-auth.enabled=false 확인 필요",
+                                userId, request.getRequestURI());
                         return true;
                     } catch (NumberFormatException e) {
-                        log.error("[DevAuth] X-USER-ID 파싱 실패: '{}'", devHeader);
+                        log.warn("auth.dev_fallback invalid value='{}'", devHeader);
                         writeError(response, ErrorCode.INVALID_REQUEST, "X-USER-ID must be a number");
                         return false;
                     }
                 }
             }
 
+            log.info("auth.missing path={}", request.getRequestURI());
             writeError(response, ErrorCode.UNAUTHORIZED, "로그인이 필요합니다");
             return false;
 
         } catch (AppException e) {
+            log.info("auth.rejected reason={} path={}", e.getMessage(), request.getRequestURI());
             writeError(response, e.getErrorCode(), e.getMessage());
             return false;
         }

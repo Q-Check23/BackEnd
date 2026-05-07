@@ -76,6 +76,38 @@ JWT 타입 분리: access / refresh / signup 토큰은 클레임 `type` 으로 �
 - 권한 검증은 서비스 레이어에서 `ClubAuthorizationService.requireMembership` / `requireAdminOrOwner` 로.
 - 이메일·refresh token 등 민감 데이터는 응답 DTO 에 노출하지 않는다 (예: `UserSearchResultDto` 는 email 미포함).
 
+## Logging
+
+`logback-spring.xml` 에서 프로파일로 출력 포맷이 갈린다. `prod` = stdout JSON (Loki/Grafana 수집 전제), 그 외 = 사람이 읽기 쉬운 텍스트.
+
+**MDC 키** — 모든 로그 라인에 자동으로 박힘:
+- `requestId` — `RequestLoggingFilter` 가 요청 진입 시 발급. 클라이언트가 `X-Request-Id` 헤더로 보내면 그 값 사용, 아니면 UUID 생성. 응답 헤더에도 동일 값 내려감
+- `userId` — `JwtAuthInterceptor` 가 인증 성공 시 주입 (JWT 또는 dev-auth fallback 모두)
+- `clientIp` — `X-Forwarded-For` 우선, 없으면 `request.getRemoteAddr()`
+
+**메시지 컨벤션** — `도메인.이벤트 key=value key=value` 형태. 한국어 자유서술 X, grep 효율 우선.
+
+**현재 찍히는 로그** (도메인 이벤트 로깅은 미도입 — 인시던트 발생 시 해당 메서드에 추가):
+
+| 위치 | 메시지 | 레벨 | 트리거 |
+|---|---|---|---|
+| `RequestLoggingFilter` | `http.access method= path= status= latencyMs=` | INFO | 모든 요청, 응답 직후 |
+| `JwtAuthInterceptor` | `auth.dev_fallback used userId= path=` | WARN | dev-auth 헤더로 인증 성공 (프로덕션 오설정 감지용) |
+| `JwtAuthInterceptor` | `auth.dev_fallback invalid value=` | WARN | `X-USER-ID` 가 숫자가 아님 |
+| `JwtAuthInterceptor` | `auth.missing path=` | INFO | 인증 헤더 없음 |
+| `JwtAuthInterceptor` | `auth.rejected reason= path=` | INFO | JWT 검증 실패 (만료/타입 불일치/서명 실패) |
+| `GlobalExceptionHandler` | `app.exception code= msg=` | ERROR/WARN | `AppException` — 5xx ERROR + 스택, 4xx WARN |
+| `GlobalExceptionHandler` | `request.invalid type= msg=` | INFO | 입력 검증 실패류 (`MethodArgumentNotValidException` 등) |
+| `GlobalExceptionHandler` | `request.missing_header header= code=` | INFO | 필수 헤더 누락 |
+| `GlobalExceptionHandler` | `access.denied msg=` | WARN | `AccessDeniedException` |
+| `GlobalExceptionHandler` | `unhandled.exception type= msg=` | ERROR | catch-all (5xx) — 스택 포함 |
+| `DiscordOAuthService` | `discord.token_exchange status= latencyMs= [body=]` | INFO/WARN | Discord 토큰 교환 (200=INFO, 4xx/network=WARN) |
+| `DiscordOAuthService` | `discord.user_info status= latencyMs= [discordId=\|body=]` | INFO/WARN | Discord 사용자 정보 조회 |
+| Hibernate | 슬로우 쿼리 | WARN | 1초 초과 (`spring.jpa.properties.hibernate.session.events.log.LOG_QUERIES_SLOWER_THAN_MS=1000`) |
+| Hikari | 커넥션 누수 | WARN | 5초 동안 미반환 (`spring.datasource.hikari.leak-detection-threshold=5000`) |
+
+**민감 데이터 금지**: JWT 원문, refresh token, Discord client-secret, 비밀번호, 이메일은 절대 로그에 남기지 않음. 사용자 식별은 `userId`(Long) 만으로.
+
 ## Testing
 
 - 컨트롤러 테스트: `MockMvcBuilders.standaloneSetup(controller)` — Spring context 미로드.
