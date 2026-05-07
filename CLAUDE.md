@@ -27,6 +27,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000
 DISCORD_CLIENT_ID=<id>
 DISCORD_CLIENT_SECRET=<secret>
 DISCORD_REDIRECT_URI=http://localhost:8080/api/auth/code
+FRONTEND_AUTH_CALLBACK_URL=http://localhost:5173/auth/callback
 JWT_SECRET=<at-least-32-chars>
 ```
 
@@ -53,9 +54,10 @@ Each module follows the pattern: `controller/`, `dto/`, `domain/{model,repositor
 
 흐름:
 1. `GET /api/auth/login` → Discord OAuth 인가 페이지로 redirect, state 를 세션 저장
-2. Discord 콜백 → `GET /api/auth/code?code=...&state=...`
-   - 기존 회원: access JWT 반환 + `refresh_token` httpOnly 쿠키
-   - 신규 회원: 10분짜리 signup JWT 반환 (쿠키 없음)
+2. Discord 콜백 → `GET /api/auth/code?code=...&state=...` → 백엔드가 처리 후 **프론트 콜백 URL** (`FRONTEND_AUTH_CALLBACK_URL`) 로 302 redirect
+   - 기존 회원: `?token=<accessJwt>&isNewUser=false` + `refresh_token` httpOnly 쿠키
+   - 신규 회원: `?token=<signupJwt>&isNewUser=true` (쿠키 없음, 10분 유효)
+   - 에러: `?error=<코드>&message=<설명>`
 3. `POST /api/auth/signup` (Authorization: Bearer signup-jwt) → 회원 생성 후 access JWT + refresh 쿠키
 4. `POST /api/auth/refresh` (refresh_token 쿠키) → 새 access·refresh 쌍 (refresh 회전)
 

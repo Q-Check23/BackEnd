@@ -30,6 +30,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000
 DISCORD_CLIENT_ID=<id>
 DISCORD_CLIENT_SECRET=<secret>
 DISCORD_REDIRECT_URI=http://localhost:8080/api/auth/code
+FRONTEND_AUTH_CALLBACK_URL=http://localhost:5173/auth/callback
 JWT_SECRET=<at-least-32-chars>
 ```
 

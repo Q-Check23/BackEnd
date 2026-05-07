@@ -6,11 +6,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.UUID;
+import team23.q_check.common.config.FrontendProperties;
 import team23.q_check.common.config.JwtProperties;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
@@ -28,14 +32,17 @@ import java.time.Duration;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private static final String OAUTH_STATE_SESSION_KEY = "oauth2_state";
 
     private final AuthService authService;
     private final JwtProperties jwtProperties;
+    private final FrontendProperties frontendProperties;
 
-    public AuthController(AuthService authService, JwtProperties jwtProperties) {
+    public AuthController(AuthService authService, JwtProperties jwtProperties, FrontendProperties frontendProperties) {
         this.authService = authService;
         this.jwtProperties = jwtProperties;
+        this.frontendProperties = frontendProperties;
     }
 
     @Operation(summary = "Discord 로그인 리다이렉트", description = "Discord OAuth2 인증 페이지로 리다이렉트합니다")
@@ -48,22 +55,48 @@ public class AuthController {
 
     @Operation(
             summary = "Discord 인가코드 콜백",
-            description = "Discord에서 전달받은 인가코드를 처리합니다. " +
-                    "기존 회원이면 access token(+ refresh token 쿠키)을, 신규 회원이면 10분짜리 signup JWT를 반환합니다."
+            description = "Discord 가 브라우저를 이 URL 로 redirect 하면 백엔드가 인가코드를 처리한 뒤, " +
+                    "프론트의 콜백 라우트(FRONTEND_AUTH_CALLBACK_URL)로 302 redirect 합니다. " +
+                    "기존 회원: ?token=<accessJwt>&isNewUser=false (+ refresh token httpOnly 쿠키). " +
+                    "신규 회원: ?token=<signupJwt>&isNewUser=true. " +
+                    "에러: ?error=<코드>&message=<설명>."
     )
     @GetMapping("/code")
-    public ApiResponse<AuthCodeResponseDto> handleCode(
+    public void handleCode(
             @RequestParam String code,
             @RequestParam(required = false) String state,
             HttpServletRequest request,
             HttpServletResponse response
-    ) {
-        validateOAuthState(request, state);
-        CodeResult result = authService.processCode(code);
-        if (!result.isNewUser()) {
-            setRefreshCookie(response, result.refreshToken());
+    ) throws IOException {
+        try {
+            validateOAuthState(request, state);
+            CodeResult result = authService.processCode(code);
+            if (!result.isNewUser()) {
+                setRefreshCookie(response, result.refreshToken());
+            }
+            response.sendRedirect(buildSuccessUrl(result));
+        } catch (AppException e) {
+            log.warn("auth.code.error code={} msg={}", e.getErrorCode().getCode(), e.getMessage());
+            response.sendRedirect(buildErrorUrl(e.getErrorCode().getCode(), e.getMessage()));
         }
-        return ApiResponse.ok(new AuthCodeResponseDto(result.isNewUser(), result.clientToken()));
+    }
+
+    private String buildSuccessUrl(CodeResult result) {
+        return UriComponentsBuilder.fromUriString(frontendProperties.authCallbackUrl())
+                .queryParam("token", result.clientToken())
+                .queryParam("isNewUser", result.isNewUser())
+                .build()
+                .encode()
+                .toUriString();
+    }
+
+    private String buildErrorUrl(String errorCode, String message) {
+        return UriComponentsBuilder.fromUriString(frontendProperties.authCallbackUrl())
+                .queryParam("error", errorCode)
+                .queryParam("message", message)
+                .build()
+                .encode()
+                .toUriString();
     }
 
     @Operation(summary = "닉네임 중복 확인")
