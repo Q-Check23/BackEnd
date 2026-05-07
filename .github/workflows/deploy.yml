@@ -47,10 +47,10 @@ jobs:
         run: ./gradlew clean build -x test --no-daemon
 
       - name: Stop existing containers
-        run: docker compose down || true
+        run: docker compose -f docker-compose.yml -f docker-compose.monitoring.yml down || true
 
       - name: Build and start containers
-        run: docker compose up -d --build
+        run: docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d --build
 
       - name: Health check
         run: |
