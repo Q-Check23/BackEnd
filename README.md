@@ -29,7 +29,7 @@ LOCAL_MYSQL_PASSWORD=<password>
 CORS_ALLOWED_ORIGINS=http://localhost:3000
 DISCORD_CLIENT_ID=<id>
 DISCORD_CLIENT_SECRET=<secret>
-DISCORD_REDIRECT_URI=http://localhost:8080/auth/code
+DISCORD_REDIRECT_URI=http://localhost:8080/api/auth/code
 JWT_SECRET=<at-least-32-chars>
 ```
 
@@ -51,7 +51,7 @@ API 문서는 `http://localhost:8080/swagger-ui.html` 에서 확인.
 
 | 경로 | 설명 |
 |---|---|
-| `/auth/**` | Discord 로그인, 회원가입, 토큰 갱신 |
+| `/api/auth/**` | Discord 로그인, 회원가입, 토큰 갱신 |
 | `/api/users/**` | 내 정보, 사용자 검색 |
 | `/api/clubs/**` | 동아리·멤버 관리 |
 | `/api/events/**` | 행사 CRUD, 신청, 사진 |

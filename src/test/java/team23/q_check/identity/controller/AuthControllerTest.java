@@ -46,7 +46,7 @@ class AuthControllerTest {
     void login_redirectsToDiscordAndStoresStateInSession() throws Exception {
         when(authService.getAuthorizationUrl(any())).thenReturn("https://discord.com/oauth2/authorize?...");
 
-        var result = mockMvc.perform(get("/auth/login"))
+        var result = mockMvc.perform(get("/api/auth/login"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("https://discord.com/oauth2/authorize?..."))
                 .andReturn();
@@ -63,7 +63,7 @@ class AuthControllerTest {
         when(authService.processCode("auth-code"))
                 .thenReturn(new CodeResult(false, "access-token", "refresh-token"));
 
-        mockMvc.perform(get("/auth/code")
+        mockMvc.perform(get("/api/auth/code")
                         .session(session)
                         .param("code", "auth-code")
                         .param("state", "state-1"))
@@ -82,7 +82,7 @@ class AuthControllerTest {
         when(authService.processCode("auth-code"))
                 .thenReturn(new CodeResult(true, "signup-token", null));
 
-        mockMvc.perform(get("/auth/code")
+        mockMvc.perform(get("/api/auth/code")
                         .session(session)
                         .param("code", "auth-code")
                         .param("state", "state-1"))
@@ -97,7 +97,7 @@ class AuthControllerTest {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(OAUTH_STATE_SESSION_KEY, "expected-state");
 
-        mockMvc.perform(get("/auth/code")
+        mockMvc.perform(get("/api/auth/code")
                         .session(session)
                         .param("code", "auth-code")
                         .param("state", "different-state"))
@@ -107,7 +107,7 @@ class AuthControllerTest {
 
     @Test
     void handleCode_noSessionState_returnsBadRequest() throws Exception {
-        mockMvc.perform(get("/auth/code")
+        mockMvc.perform(get("/api/auth/code")
                         .param("code", "auth-code")
                         .param("state", "state-1"))
                 .andExpect(status().isBadRequest())
@@ -118,7 +118,7 @@ class AuthControllerTest {
     void checkNickname_returnsAvailability() throws Exception {
         when(authService.isNicknameAvailable("free-nick")).thenReturn(true);
 
-        mockMvc.perform(get("/auth/nickname/check").param("nickname", "free-nick"))
+        mockMvc.perform(get("/api/auth/nickname/check").param("nickname", "free-nick"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.available").value(true));
     }
@@ -128,7 +128,7 @@ class AuthControllerTest {
         when(authService.signup(any(), any()))
                 .thenReturn(new TokenResult(7L, "access-token", "refresh-token"));
 
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/api/auth/signup")
                         .header("Authorization", "Bearer signup-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -142,7 +142,7 @@ class AuthControllerTest {
 
     @Test
     void signup_missingAuthorizationHeader_returnsUnauthorized() throws Exception {
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 { "name": "김지윤", "nickname": "kimjyun", "email": "kim@example.com" }
@@ -153,7 +153,7 @@ class AuthControllerTest {
 
     @Test
     void signup_malformedAuthorizationHeader_returnsUnauthorized() throws Exception {
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/api/auth/signup")
                         .header("Authorization", "signup-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -167,7 +167,7 @@ class AuthControllerTest {
         when(authService.refresh("old-refresh"))
                 .thenReturn(new TokenResult(7L, "new-access", "new-refresh"));
 
-        mockMvc.perform(post("/auth/refresh")
+        mockMvc.perform(post("/api/auth/refresh")
                         .cookie(new jakarta.servlet.http.Cookie("refresh_token", "old-refresh")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.userId").value(7))
