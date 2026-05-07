@@ -25,7 +25,7 @@ import java.time.Duration;
 
 @Tag(name = "Auth", description = "Discord OAuth2 인증 API")
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private static final String OAUTH_STATE_SESSION_KEY = "oauth2_state";

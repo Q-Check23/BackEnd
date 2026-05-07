@@ -26,7 +26,7 @@ LOCAL_MYSQL_PASSWORD=<password>
 CORS_ALLOWED_ORIGINS=http://localhost:3000
 DISCORD_CLIENT_ID=<id>
 DISCORD_CLIENT_SECRET=<secret>
-DISCORD_REDIRECT_URI=http://localhost:8080/auth/code
+DISCORD_REDIRECT_URI=http://localhost:8080/api/auth/code
 JWT_SECRET=<at-least-32-chars>
 ```
 
@@ -37,7 +37,7 @@ Swagger UI is served at `/swagger-ui.html`.
 **Stack:** Spring Boot 3.4.2 · Spring Data JPA · MySQL · Flyway · Lombok · SpringDoc OpenAPI 2.8.5 · JJWT 0.12 · JUnit 5 + Mockito
 
 **Domain modules** under `src/main/java/team23/q_check/`:
-- `identity` — Discord OAuth2 인증, 사용자 정보·검색 (`/auth/**`, `/api/users/**`)
+- `identity` — Discord OAuth2 인증, 사용자 정보·검색 (`/api/auth/**`, `/api/users/**`)
 - `club` — 클럽 생성·멤버 관리·권한 위임·탈퇴/제거 (`/api/clubs/**`)
 - `event` — 행사 CRUD·신청 폼·참가 신청/취소·QR/수동 출석·캘린더·사진 (`/api/events/**`, `/api/attendance/**`, `/api/calendar/**`)
 - `settlement` — 정산 그룹 분배·상태 전이(UNPAID/PENDING/COMPLETED)·리마인드 (`/api/settlements/**`)
@@ -52,12 +52,12 @@ Each module follows the pattern: `controller/`, `dto/`, `domain/{model,repositor
 **Discord OAuth2 + JWT** 가 기본 인증 흐름. 헤더 기반 dev fallback 도 지원.
 
 흐름:
-1. `GET /auth/login` → Discord OAuth 인가 페이지로 redirect, state 를 세션 저장
-2. Discord 콜백 → `GET /auth/code?code=...&state=...`
+1. `GET /api/auth/login` → Discord OAuth 인가 페이지로 redirect, state 를 세션 저장
+2. Discord 콜백 → `GET /api/auth/code?code=...&state=...`
    - 기존 회원: access JWT 반환 + `refresh_token` httpOnly 쿠키
    - 신규 회원: 10분짜리 signup JWT 반환 (쿠키 없음)
-3. `POST /auth/signup` (Authorization: Bearer signup-jwt) → 회원 생성 후 access JWT + refresh 쿠키
-4. `POST /auth/refresh` (refresh_token 쿠키) → 새 access·refresh 쌍 (refresh 회전)
+3. `POST /api/auth/signup` (Authorization: Bearer signup-jwt) → 회원 생성 후 access JWT + refresh 쿠키
+4. `POST /api/auth/refresh` (refresh_token 쿠키) → 새 access·refresh 쌍 (refresh 회전)
 
 보호된 엔드포인트는 `JwtAuthInterceptor` 가 게이트하고, `@CurrentUserId` 가 컨트롤러 파라미터로 userId 를 주입한다.
 
