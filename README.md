@@ -39,7 +39,7 @@ JWT_SECRET=<at-least-32-chars>
 ./gradlew bootRun
 ```
 
-API 문서는 `http://localhost:8080/swagger-ui.html` 에서 확인.
+API 문서는 `http://localhost:8080/api/swagger-ui.html` 에서 확인.
 
 ### 테스트
 

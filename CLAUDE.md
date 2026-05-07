@@ -30,7 +30,7 @@ DISCORD_REDIRECT_URI=http://localhost:8080/api/auth/code
 JWT_SECRET=<at-least-32-chars>
 ```
 
-Swagger UI is served at `/swagger-ui.html`.
+Swagger UI is served at `/api/swagger-ui.html` (OpenAPI JSON: `/api/v3/api-docs`).
 
 ## Architecture
 
