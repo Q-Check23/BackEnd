@@ -29,7 +29,10 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        userService = new UserService(userRepository);
+        userService = new UserService(
+                userRepository,
+                mock(team23.q_check.event.domain.repository.RegistrationRepository.class)
+        );
     }
 
     @Test

@@ -108,6 +108,18 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
+    public team23.q_check.event.dto.EventDashboardResponseDto getEventDashboard(Long currentUserId, Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Event not found: " + eventId));
+        clubAuthorizationService.requireAdminOrOwner(event.getClub().getId(), currentUserId);
+        long total = registrationRepository.countByEvent_Id(eventId);
+        long checkedIn = registrationRepository.countByEvent_IdAndStatus(eventId, team23.q_check.event.domain.model.RegistrationStatus.CHECKED_IN);
+        long canceled = registrationRepository.countByEvent_IdAndStatus(eventId, team23.q_check.event.domain.model.RegistrationStatus.CANCELED);
+        double rate = total == 0 ? 0.0 : ((double) checkedIn) / total;
+        return new team23.q_check.event.dto.EventDashboardResponseDto(total, checkedIn, canceled, rate);
+    }
+
+    @Transactional(readOnly = true)
     public EventPageResponseDto getEvents(int page, int size, Long clubId) {
         PageRequest pageRequest = PageRequest.of(page, size);
         Page<Event> eventPage = (clubId == null)

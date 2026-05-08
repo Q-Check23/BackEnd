@@ -25,4 +25,18 @@ public interface RegistrationRepository extends JpaRepository<Registration, Long
     boolean existsByEvent_IdAndStatusIn(Long eventId, List<RegistrationStatus> statuses);
 
     void deleteAllByEvent_Id(Long eventId);
+
+    long countByUser_IdAndStatus(Long userId, RegistrationStatus status);
+
+    long countByEvent_Id(Long eventId);
+
+    long countByEvent_IdAndStatus(Long eventId, RegistrationStatus status);
+
+    @Query("""
+            SELECT COUNT(r) FROM Registration r
+            WHERE r.user.id = :userId
+              AND r.status = team23.q_check.event.domain.model.RegistrationStatus.REGISTERED
+              AND r.event.startTime > CURRENT_TIMESTAMP
+            """)
+    long countUpcomingRegisteredEvents(@Param("userId") Long userId);
 }

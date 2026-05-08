@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.identity.dto.MyUserResponseDto;
+import team23.q_check.identity.dto.MyUserStatsResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
 import team23.q_check.identity.dto.UserSearchResultDto;
 import team23.q_check.identity.domain.service.UserService;
@@ -49,6 +50,15 @@ public class UserController {
             @RequestBody UpdateMyUserRequestDto request
     ) {
         return ApiResponse.ok(userService.updateMyUser(currentUserId, request));
+    }
+
+    @Operation(summary = "내 활동 통계 조회")
+    @GetMapping("/me/stats")
+    public ApiResponse<MyUserStatsResponseDto> getMyStats(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId
+    ) {
+        return ApiResponse.ok(userService.getMyStats(currentUserId));
     }
 
     @Operation(summary = "회원 탈퇴 (soft-delete)",

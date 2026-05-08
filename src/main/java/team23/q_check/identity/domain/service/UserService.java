@@ -4,8 +4,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
+import team23.q_check.event.domain.model.RegistrationStatus;
+import team23.q_check.event.domain.repository.RegistrationRepository;
 import team23.q_check.identity.domain.model.User;
 import team23.q_check.identity.dto.MyUserResponseDto;
+import team23.q_check.identity.dto.MyUserStatsResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
 import team23.q_check.identity.dto.UserSearchResultDto;
 import team23.q_check.identity.domain.repository.UserRepository;
@@ -16,9 +19,20 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RegistrationRepository registrationRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RegistrationRepository registrationRepository) {
         this.userRepository = userRepository;
+        this.registrationRepository = registrationRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public MyUserStatsResponseDto getMyStats(Long currentUserId) {
+        userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
+        long attended = registrationRepository.countByUser_IdAndStatus(currentUserId, RegistrationStatus.CHECKED_IN);
+        long upcoming = registrationRepository.countUpcomingRegisteredEvents(currentUserId);
+        return new MyUserStatsResponseDto(attended, upcoming);
     }
 
     @Transactional(readOnly = true)
