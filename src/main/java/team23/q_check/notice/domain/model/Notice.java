@@ -65,4 +65,13 @@ public class Notice {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    public void updateContent(String title, String content) {
+        if (title != null && !title.isBlank()) {
+            this.title = title.trim();
+        }
+        if (content != null && !content.isBlank()) {
+            this.content = content.trim();
+        }
+    }
 }

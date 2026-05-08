@@ -11,6 +11,7 @@ import team23.q_check.notice.domain.model.Notice;
 import team23.q_check.notice.domain.repository.NoticeRepository;
 import team23.q_check.notice.dto.CreateNoticeRequestDto;
 import team23.q_check.notice.dto.NoticeResponseDto;
+import team23.q_check.notice.dto.UpdateNoticeRequestDto;
 
 import java.util.List;
 
@@ -57,6 +58,37 @@ public class NoticeService {
                 request.content().trim()
         );
         return toResponseDto(noticeRepository.save(notice));
+    }
+
+    @Transactional
+    public NoticeResponseDto updateNotice(
+            Long currentUserId,
+            Long clubId,
+            Long noticeId,
+            UpdateNoticeRequestDto request
+    ) {
+        if (request == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Request body is required");
+        }
+        clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Notice not found: " + noticeId));
+        if (!notice.getClub().getId().equals(clubId)) {
+            throw new AppException(ErrorCode.NOT_FOUND, "Notice not found in this club");
+        }
+        notice.updateContent(request.title(), request.content());
+        return toResponseDto(notice);
+    }
+
+    @Transactional
+    public void deleteNotice(Long currentUserId, Long clubId, Long noticeId) {
+        clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Notice not found: " + noticeId));
+        if (!notice.getClub().getId().equals(clubId)) {
+            throw new AppException(ErrorCode.NOT_FOUND, "Notice not found in this club");
+        }
+        noticeRepository.delete(notice);
     }
 
     private NoticeResponseDto toResponseDto(Notice notice) {

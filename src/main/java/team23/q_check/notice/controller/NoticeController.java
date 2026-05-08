@@ -10,6 +10,7 @@ import team23.q_check.common.response.ApiResponse;
 import team23.q_check.notice.domain.service.NoticeService;
 import team23.q_check.notice.dto.CreateNoticeRequestDto;
 import team23.q_check.notice.dto.NoticeResponseDto;
+import team23.q_check.notice.dto.UpdateNoticeRequestDto;
 
 import java.util.List;
 
@@ -44,5 +45,29 @@ public class NoticeController {
             @RequestBody CreateNoticeRequestDto request
     ) {
         return ApiResponse.ok(noticeService.createNotice(currentUserId, clubId, request));
+    }
+
+    @Operation(summary = "공지사항 수정 (OWNER/ADMIN)")
+    @PutMapping("/{noticeId}")
+    public ApiResponse<NoticeResponseDto> updateNotice(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId,
+            @PathVariable Long noticeId,
+            @RequestBody UpdateNoticeRequestDto request
+    ) {
+        return ApiResponse.ok(noticeService.updateNotice(currentUserId, clubId, noticeId, request));
+    }
+
+    @Operation(summary = "공지사항 삭제 (OWNER/ADMIN)")
+    @DeleteMapping("/{noticeId}")
+    public ApiResponse<Void> deleteNotice(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId,
+            @PathVariable Long noticeId
+    ) {
+        noticeService.deleteNotice(currentUserId, clubId, noticeId);
+        return ApiResponse.ok(null);
     }
 }
