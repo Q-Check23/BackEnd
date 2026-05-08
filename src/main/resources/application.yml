@@ -56,6 +56,11 @@ discord:
   token-url: https://discord.com/api/oauth2/token
   user-url: https://discord.com/api/users/@me
 
+frontend:
+  # OAuth 처리 후 토큰을 query string으로 실어 redirect 할 프론트 콜백 URL
+  # ex) https://qcheck.asia/auth/callback (프론트 라우트 경로 확정되면 갱신)
+  auth-callback-url: ${FRONTEND_AUTH_CALLBACK_URL}
+
 jwt:
   secret: ${JWT_SECRET}                  # HMAC-SHA256 서명 키, 최소 32자 이상
   access-token-expiration: 3600000       # 1시간 (ms)
