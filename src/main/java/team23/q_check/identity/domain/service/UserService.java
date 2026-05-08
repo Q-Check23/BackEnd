@@ -36,6 +36,13 @@ public class UserService {
         return toDto(user);
     }
 
+    @Transactional
+    public void deleteMyUser(Long currentUserId) {
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
+        user.markDeleted();
+    }
+
     /**
      * 닉네임(부분일치) 또는 이메일(정확매치)로 사용자를 검색한다.
      * 둘 중 하나는 비어있지 않아야 하며, 응답에 이메일은 포함하지 않는다.
