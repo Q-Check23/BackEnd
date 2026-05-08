@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.club.dto.AddClubMemberRequestDto;
+import team23.q_check.club.dto.ClubDetailResponseDto;
 import team23.q_check.club.dto.ClubMemberResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.JoinClubRequestDto;
@@ -63,6 +64,16 @@ public class ClubController {
             @CurrentUserId Long currentUserId
     ) {
         return ApiResponse.ok(clubService.getMyClubs(currentUserId));
+    }
+
+    @Operation(summary = "클럽 상세 조회 (멤버 전용)")
+    @GetMapping("/{clubId}")
+    public ApiResponse<ClubDetailResponseDto> getClubDetail(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId
+    ) {
+        return ApiResponse.ok(clubService.getClubDetail(currentUserId, clubId));
     }
 
     @Operation(summary = "초대 코드 조회 (OWNER/ADMIN)")

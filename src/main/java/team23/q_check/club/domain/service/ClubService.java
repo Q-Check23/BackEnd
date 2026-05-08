@@ -6,6 +6,7 @@ import team23.q_check.club.domain.model.Club;
 import team23.q_check.club.domain.model.ClubMember;
 import team23.q_check.club.domain.model.ClubRole;
 import team23.q_check.club.dto.AddClubMemberRequestDto;
+import team23.q_check.club.dto.ClubDetailResponseDto;
 import team23.q_check.club.dto.ClubMemberResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.JoinClubRequestDto;
@@ -88,6 +89,20 @@ public class ClubService {
 
         clubMemberRepository.save(new ClubMember(club, currentUser, ClubRole.MEMBER));
         return new MyClubResponseDto(club.getId(), club.getName(), club.getDescription(), ClubRole.MEMBER);
+    }
+
+    @Transactional(readOnly = true)
+    public ClubDetailResponseDto getClubDetail(Long currentUserId, Long clubId) {
+        ClubMember membership = clubAuthorizationService.requireMembership(clubId, currentUserId);
+        Club club = membership.getClub();
+        long memberCount = clubMemberRepository.countByClub_Id(clubId);
+        return new ClubDetailResponseDto(
+                club.getId(),
+                club.getName(),
+                club.getDescription(),
+                memberCount,
+                membership.getRole()
+        );
     }
 
     @Transactional(readOnly = true)
