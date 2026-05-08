@@ -7,8 +7,8 @@ import team23.q_check.club.domain.model.ClubMember;
 import team23.q_check.club.domain.model.ClubRole;
 import team23.q_check.club.dto.AddClubMemberRequestDto;
 import team23.q_check.club.dto.ClubMemberResponseDto;
-import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
+import team23.q_check.club.dto.JoinClubRequestDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
 import team23.q_check.club.domain.repository.ClubMemberRepository;
@@ -18,6 +18,7 @@ import team23.q_check.common.error.ErrorCode;
 import team23.q_check.identity.domain.model.User;
 import team23.q_check.identity.domain.repository.UserRepository;
 
+import java.security.SecureRandom;
 import java.util.List;
 
 @Service
@@ -41,7 +42,7 @@ public class ClubService {
     }
 
     @Transactional
-    public ClubResponseDto createClub(Long currentUserId, CreateClubRequestDto request) {
+    public MyClubResponseDto createClub(Long currentUserId, CreateClubRequestDto request) {
         validateCreateRequest(request);
 
         if (clubRepository.existsByDiscordGuildId(request.discordGuildId())) {
@@ -55,13 +56,44 @@ public class ClubService {
                 request.name().trim(),
                 request.description(),
                 request.discordGuildId().trim(),
-                request.coverImageUrl()
+                request.coverImageUrl(),
+                generateUniqueInviteCode()
         );
         Club savedClub = clubRepository.save(club);
         ClubMember ownerMembership = new ClubMember(savedClub, currentUser, ClubRole.OWNER);
         clubMemberRepository.save(ownerMembership);
 
-        return new ClubResponseDto(savedClub.getId(), savedClub.getName(), savedClub.getDescription());
+        return new MyClubResponseDto(
+                savedClub.getId(),
+                savedClub.getName(),
+                savedClub.getDescription(),
+                ClubRole.OWNER
+        );
+    }
+
+    @Transactional
+    public MyClubResponseDto joinClub(Long currentUserId, JoinClubRequestDto request) {
+        if (request == null || request.inviteCode() == null || request.inviteCode().isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "inviteCode is required");
+        }
+        Club club = clubRepository.findByInviteCode(request.inviteCode().trim())
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Invalid invite code"));
+
+        if (clubMemberRepository.existsByClub_IdAndUser_Id(club.getId(), currentUserId)) {
+            throw new AppException(ErrorCode.CONFLICT, "Already a member of this club");
+        }
+
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
+
+        clubMemberRepository.save(new ClubMember(club, currentUser, ClubRole.MEMBER));
+        return new MyClubResponseDto(club.getId(), club.getName(), club.getDescription(), ClubRole.MEMBER);
+    }
+
+    @Transactional(readOnly = true)
+    public String getInviteCode(Long currentUserId, Long clubId) {
+        ClubMember membership = clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
+        return membership.getClub().getInviteCode();
     }
 
     @Transactional(readOnly = true)
@@ -196,6 +228,25 @@ public class ClubService {
         if (request.discordGuildId() == null || request.discordGuildId().isBlank()) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "discordGuildId is required");
         }
+    }
+
+    private static final char[] INVITE_CODE_ALPHABET =
+            "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".toCharArray();
+    private static final int INVITE_CODE_LENGTH = 8;
+    private static final SecureRandom INVITE_CODE_RANDOM = new SecureRandom();
+
+    private String generateUniqueInviteCode() {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            char[] buf = new char[INVITE_CODE_LENGTH];
+            for (int i = 0; i < INVITE_CODE_LENGTH; i++) {
+                buf[i] = INVITE_CODE_ALPHABET[INVITE_CODE_RANDOM.nextInt(INVITE_CODE_ALPHABET.length)];
+            }
+            String code = new String(buf);
+            if (!clubRepository.existsByInviteCode(code)) {
+                return code;
+            }
+        }
+        throw new AppException(ErrorCode.INTERNAL_ERROR, "Failed to allocate a unique invite code");
     }
 
     private ClubRole parseRole(UpdateClubMemberRoleRequestDto request) {

@@ -76,7 +76,7 @@ class EventServiceTest {
 
     @Test
     void createEvent_withSelectField_savesAndReturnsDetail() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
@@ -118,7 +118,7 @@ class EventServiceTest {
 
     @Test
     void createEvent_selectWithoutOptions_throwsInvalidRequest() {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         User admin = new User("dev-1", null, "admin", null);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
         when(clubRepository.existsById(1L)).thenReturn(true);
@@ -146,7 +146,7 @@ class EventServiceTest {
 
     @Test
     void createEvent_propagatesAllFieldsToEntity() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User admin = new User("dev-1", null, "admin", null);
         ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
@@ -190,7 +190,7 @@ class EventServiceTest {
 
     @Test
     void createEvent_endTimeBeforeStart_throwsInvalidRequest() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         ClubMember adminMembership = new ClubMember(club, new User("dev-1", null, "admin", null), ClubRole.ADMIN);
         when(clubRepository.existsById(1L)).thenReturn(true);
@@ -209,7 +209,7 @@ class EventServiceTest {
 
     @Test
     void createEvent_negativeRegisterFee_throwsInvalidRequest() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         ClubMember adminMembership = new ClubMember(club, new User("dev-1", null, "admin", null), ClubRole.ADMIN);
         when(clubRepository.existsById(1L)).thenReturn(true);
@@ -227,7 +227,7 @@ class EventServiceTest {
 
     @Test
     void updateEvent_withEndTimeOnly_doesNotOverwriteStartTime() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -247,7 +247,7 @@ class EventServiceTest {
 
     @Test
     void updateEvent_endTimeBeforeExistingStart_throwsInvalidRequest() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -267,7 +267,7 @@ class EventServiceTest {
 
     @Test
     void deleteEvent_whenActiveRegistrationExists_throwsConflict() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -289,7 +289,7 @@ class EventServiceTest {
 
     @Test
     void deleteEvent_cascadesChildrenAndDeletesEvent() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -314,7 +314,7 @@ class EventServiceTest {
 
     @Test
     void event_defaultConstructor_initializesRegisterFeeToZero() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 LocalDateTime.parse("2026-03-10T20:00:00"),

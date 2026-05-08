@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.club.dto.AddClubMemberRequestDto;
 import team23.q_check.club.dto.ClubMemberResponseDto;
-import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
+import team23.q_check.club.dto.JoinClubRequestDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
 import team23.q_check.club.domain.service.ClubService;
@@ -38,12 +38,22 @@ public class ClubController {
 
     @Operation(summary = "클럽 생성 (생성자는 OWNER로 자동 가입)")
     @PostMapping
-    public ApiResponse<ClubResponseDto> createClub(
+    public ApiResponse<MyClubResponseDto> createClub(
             @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @RequestBody CreateClubRequestDto request
     ) {
         return ApiResponse.ok(clubService.createClub(currentUserId, request));
+    }
+
+    @Operation(summary = "초대 코드로 클럽 가입")
+    @PostMapping("/join")
+    public ApiResponse<MyClubResponseDto> joinClub(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @RequestBody JoinClubRequestDto request
+    ) {
+        return ApiResponse.ok(clubService.joinClub(currentUserId, request));
     }
 
     @Operation(summary = "내가 속한 클럽 목록 조회")
@@ -53,6 +63,16 @@ public class ClubController {
             @CurrentUserId Long currentUserId
     ) {
         return ApiResponse.ok(clubService.getMyClubs(currentUserId));
+    }
+
+    @Operation(summary = "초대 코드 조회 (OWNER/ADMIN)")
+    @GetMapping("/{clubId}/invite-code")
+    public ApiResponse<String> getInviteCode(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId
+    ) {
+        return ApiResponse.ok(clubService.getInviteCode(currentUserId, clubId));
     }
 
     @Operation(summary = "클럽 멤버 목록 조회")

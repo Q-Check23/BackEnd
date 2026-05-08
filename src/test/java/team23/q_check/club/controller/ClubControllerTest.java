@@ -7,7 +7,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import team23.q_check.club.domain.model.ClubRole;
 import team23.q_check.club.dto.ClubMemberResponseDto;
-import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.domain.service.ClubService;
 import team23.q_check.common.auth.CurrentUserIdArgumentResolver;
@@ -44,7 +43,8 @@ class ClubControllerTest {
 
     @Test
     void createClub_returnsCreatedClub() throws Exception {
-        when(clubService.createClub(anyLong(), any())).thenReturn(new ClubResponseDto(1L, "UMC", "Club desc"));
+        when(clubService.createClub(anyLong(), any()))
+                .thenReturn(new MyClubResponseDto(1L, "UMC", "Club desc", ClubRole.OWNER));
 
         mockMvc.perform(post("/api/clubs")
                         .header("X-USER-ID", "1")
@@ -53,8 +53,9 @@ class ClubControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.id").value(1))
-                .andExpect(jsonPath("$.data.name").value("UMC"));
+                .andExpect(jsonPath("$.data.clubId").value(1))
+                .andExpect(jsonPath("$.data.clubName").value("UMC"))
+                .andExpect(jsonPath("$.data.myRole").value("OWNER"));
     }
 
     @Test
