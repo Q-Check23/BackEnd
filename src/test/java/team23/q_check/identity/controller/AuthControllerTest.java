@@ -7,7 +7,10 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import team23.q_check.common.config.FrontendProperties;
 import team23.q_check.common.config.JwtProperties;
+import team23.q_check.common.error.AppException;
+import team23.q_check.common.error.ErrorCode;
 import team23.q_check.common.error.GlobalExceptionHandler;
 import team23.q_check.identity.domain.service.AuthService;
 import team23.q_check.identity.domain.service.AuthService.CodeResult;
@@ -31,12 +34,15 @@ class AuthControllerTest {
     private MockMvc mockMvc;
     private AuthService authService;
 
+    private static final String FRONT_CALLBACK = "https://qcheck.asia/auth/callback";
+
     @BeforeEach
     void setUp() {
         authService = mock(AuthService.class);
         JwtProperties jwtProperties = new JwtProperties("test-secret-key-of-at-least-32-bytes!", 3_600_000L,
                 604_800_000L, 600_000L);
-        AuthController controller = new AuthController(authService, jwtProperties);
+        FrontendProperties frontendProperties = new FrontendProperties(FRONT_CALLBACK);
+        AuthController controller = new AuthController(authService, jwtProperties, frontendProperties);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -57,7 +63,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void handleCode_existingUser_setsRefreshCookieAndReturnsAccessToken() throws Exception {
+    void handleCode_existingUser_redirectsToFrontWithAccessTokenAndSetsRefreshCookie() throws Exception {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(OAUTH_STATE_SESSION_KEY, "state-1");
         when(authService.processCode("auth-code"))
@@ -67,16 +73,15 @@ class AuthControllerTest {
                         .session(session)
                         .param("code", "auth-code")
                         .param("state", "state-1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.isNewUser").value(false))
-                .andExpect(jsonPath("$.data.token").value("access-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(FRONT_CALLBACK + "?token=access-token&isNewUser=false"))
                 .andExpect(header().exists("Set-Cookie"))
                 .andExpect(cookie().value("refresh_token", "refresh-token"))
                 .andExpect(cookie().httpOnly("refresh_token", true));
     }
 
     @Test
-    void handleCode_newUser_doesNotSetRefreshCookie() throws Exception {
+    void handleCode_newUser_redirectsWithSignupTokenAndNoCookie() throws Exception {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(OAUTH_STATE_SESSION_KEY, "state-1");
         when(authService.processCode("auth-code"))
@@ -86,14 +91,13 @@ class AuthControllerTest {
                         .session(session)
                         .param("code", "auth-code")
                         .param("state", "state-1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.isNewUser").value(true))
-                .andExpect(jsonPath("$.data.token").value("signup-token"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(FRONT_CALLBACK + "?token=signup-token&isNewUser=true"))
                 .andExpect(cookie().doesNotExist("refresh_token"));
     }
 
     @Test
-    void handleCode_stateMismatch_returnsBadRequest() throws Exception {
+    void handleCode_stateMismatch_redirectsWithError() throws Exception {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(OAUTH_STATE_SESSION_KEY, "expected-state");
 
@@ -101,17 +105,25 @@ class AuthControllerTest {
                         .session(session)
                         .param("code", "auth-code")
                         .param("state", "different-state"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl(
+                        FRONT_CALLBACK + "?error=INVALID_REQUEST&message=OAuth%20state%EA%B0%80%20%EC%9C%A0%ED%9A%A8%ED%95%98%EC%A7%80%20%EC%95%8A%EC%8A%B5%EB%8B%88%EB%8B%A4"));
     }
 
     @Test
-    void handleCode_noSessionState_returnsBadRequest() throws Exception {
+    void handleCode_serviceFailure_redirectsWithError() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(OAUTH_STATE_SESSION_KEY, "state-1");
+        when(authService.processCode("auth-code"))
+                .thenThrow(new AppException(ErrorCode.UNAUTHORIZED, "Discord 인가코드 교환에 실패했습니다"));
+
         mockMvc.perform(get("/api/auth/code")
+                        .session(session)
                         .param("code", "auth-code")
                         .param("state", "state-1"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+                .andExpect(status().is3xxRedirection())
+                .andExpect(header().string("Location",
+                        org.hamcrest.Matchers.containsString("error=UNAUTHORIZED")));
     }
 
     @Test

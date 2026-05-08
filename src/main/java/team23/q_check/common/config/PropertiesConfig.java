@@ -4,5 +4,5 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties({DiscordProperties.class, JwtProperties.class})
+@EnableConfigurationProperties({DiscordProperties.class, JwtProperties.class, FrontendProperties.class})
 public class PropertiesConfig {}
