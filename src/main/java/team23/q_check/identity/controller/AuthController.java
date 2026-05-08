@@ -105,6 +105,26 @@ public class AuthController {
         return ApiResponse.ok(new AuthTokenResponseDto(result.userId(), result.accessToken()));
     }
 
+    @Operation(
+            summary = "로그아웃",
+            description = "서버 측 refresh token을 무효화하고 refresh_token 쿠키를 즉시 만료시킵니다."
+    )
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(
+            @team23.q_check.common.auth.CurrentUserId Long currentUserId,
+            HttpServletResponse response
+    ) {
+        authService.logout(currentUserId);
+        ResponseCookie expired = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, expired.toString());
+        return ApiResponse.ok(null);
+    }
+
     private void setRefreshCookie(HttpServletResponse response, String refreshToken) {
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)

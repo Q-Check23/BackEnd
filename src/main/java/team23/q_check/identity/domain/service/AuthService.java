@@ -111,6 +111,15 @@ public class AuthService {
         return discordOAuthService.getAuthorizationUrl(state);
     }
 
+    /**
+     * 로그아웃 — 사용자의 refresh token을 무효화한다.
+     * (access token 자체는 stateless라 만료까지 기다림)
+     */
+    @Transactional
+    public void logout(Long userId) {
+        userRepository.findById(userId).ifPresent(user -> user.updateRefreshToken(null));
+    }
+
     public boolean isNicknameAvailable(String nickname) {
         return !userRepository.existsByUsername(nickname);
     }
