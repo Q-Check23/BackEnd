@@ -12,12 +12,15 @@ import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.JoinClubRequestDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
+import team23.q_check.club.dto.UpdateClubRequestDto;
 import team23.q_check.club.domain.repository.ClubMemberRepository;
 import team23.q_check.club.domain.repository.ClubRepository;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
+import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.identity.domain.model.User;
 import team23.q_check.identity.domain.repository.UserRepository;
+import team23.q_check.notice.domain.repository.NoticeRepository;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -29,17 +32,23 @@ public class ClubService {
     private final ClubMemberRepository clubMemberRepository;
     private final UserRepository userRepository;
     private final ClubAuthorizationService clubAuthorizationService;
+    private final EventRepository eventRepository;
+    private final NoticeRepository noticeRepository;
 
     public ClubService(
             ClubRepository clubRepository,
             ClubMemberRepository clubMemberRepository,
             UserRepository userRepository,
-            ClubAuthorizationService clubAuthorizationService
+            ClubAuthorizationService clubAuthorizationService,
+            EventRepository eventRepository,
+            NoticeRepository noticeRepository
     ) {
         this.clubRepository = clubRepository;
         this.clubMemberRepository = clubMemberRepository;
         this.userRepository = userRepository;
         this.clubAuthorizationService = clubAuthorizationService;
+        this.eventRepository = eventRepository;
+        this.noticeRepository = noticeRepository;
     }
 
     @Transactional
@@ -89,6 +98,43 @@ public class ClubService {
 
         clubMemberRepository.save(new ClubMember(club, currentUser, ClubRole.MEMBER));
         return new MyClubResponseDto(club.getId(), club.getName(), club.getDescription(), ClubRole.MEMBER);
+    }
+
+    @Transactional
+    public void deleteClub(Long currentUserId, Long clubId) {
+        ClubMember membership = clubAuthorizationService.requireMembership(clubId, currentUserId);
+        if (membership.getRole() != ClubRole.OWNER) {
+            throw new AppException(ErrorCode.FORBIDDEN, "Only OWNER can delete the club");
+        }
+        if (eventRepository.countByClub_Id(clubId) > 0) {
+            throw new AppException(ErrorCode.CONFLICT, "Delete all events before deleting the club");
+        }
+        if (noticeRepository.countByClub_Id(clubId) > 0) {
+            throw new AppException(ErrorCode.CONFLICT, "Delete all notices before deleting the club");
+        }
+        if (clubMemberRepository.countByClub_Id(clubId) > 1) {
+            throw new AppException(ErrorCode.CONFLICT, "Remove all other members before deleting the club");
+        }
+        clubMemberRepository.delete(membership);
+        clubRepository.deleteById(clubId);
+    }
+
+    @Transactional
+    public ClubDetailResponseDto updateClub(Long currentUserId, Long clubId, UpdateClubRequestDto request) {
+        if (request == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "Request body is required");
+        }
+        ClubMember membership = clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
+        Club club = membership.getClub();
+        club.updateInfo(request.name(), request.description(), request.coverImageUrl());
+        long memberCount = clubMemberRepository.countByClub_Id(clubId);
+        return new ClubDetailResponseDto(
+                club.getId(),
+                club.getName(),
+                club.getDescription(),
+                memberCount,
+                membership.getRole()
+        );
     }
 
     @Transactional(readOnly = true)

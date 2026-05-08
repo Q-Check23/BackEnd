@@ -33,6 +33,8 @@ class ClubServiceTest {
     private ClubMemberRepository clubMemberRepository;
     private UserRepository userRepository;
     private ClubAuthorizationService clubAuthorizationService;
+    private team23.q_check.event.domain.repository.EventRepository eventRepository;
+    private team23.q_check.notice.domain.repository.NoticeRepository noticeRepository;
     private ClubService clubService;
 
     @BeforeEach
@@ -41,7 +43,9 @@ class ClubServiceTest {
         clubMemberRepository = mock(ClubMemberRepository.class);
         userRepository = mock(UserRepository.class);
         clubAuthorizationService = mock(ClubAuthorizationService.class);
-        clubService = new ClubService(clubRepository, clubMemberRepository, userRepository, clubAuthorizationService);
+        eventRepository = mock(team23.q_check.event.domain.repository.EventRepository.class);
+        noticeRepository = mock(team23.q_check.notice.domain.repository.NoticeRepository.class);
+        clubService = new ClubService(clubRepository, clubMemberRepository, userRepository, clubAuthorizationService, eventRepository, noticeRepository);
     }
 
     @Test

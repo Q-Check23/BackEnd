@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
+    long countByClub_Id(Long clubId);
+
     @Query("SELECT e FROM Event e WHERE e.club.id IN :clubIds AND YEAR(e.startTime) = :year AND MONTH(e.startTime) = :month ORDER BY e.startTime ASC")
     List<Event> findByClubIdsAndYearMonth(@Param("clubIds") List<Long> clubIds,
                                           @Param("year") int year,

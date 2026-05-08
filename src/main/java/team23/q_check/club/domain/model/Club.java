@@ -73,4 +73,16 @@ public class Club {
     public String getInviteCode() {
         return inviteCode;
     }
+
+    public void updateInfo(String name, String description, String coverImageUrl) {
+        if (name != null && !name.isBlank()) {
+            this.name = name.trim();
+        }
+        if (description != null) {
+            this.description = description;
+        }
+        if (coverImageUrl != null) {
+            this.coverImageUrl = coverImageUrl;
+        }
+    }
 }

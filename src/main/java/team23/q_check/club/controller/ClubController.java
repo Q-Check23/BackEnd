@@ -19,6 +19,7 @@ import team23.q_check.club.dto.CreateClubRequestDto;
 import team23.q_check.club.dto.JoinClubRequestDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
+import team23.q_check.club.dto.UpdateClubRequestDto;
 import team23.q_check.club.domain.service.ClubService;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
@@ -74,6 +75,29 @@ public class ClubController {
             @PathVariable Long clubId
     ) {
         return ApiResponse.ok(clubService.getClubDetail(currentUserId, clubId));
+    }
+
+    @Operation(summary = "클럽 정보 수정 (OWNER/ADMIN)")
+    @PutMapping("/{clubId}")
+    public ApiResponse<ClubDetailResponseDto> updateClub(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId,
+            @RequestBody UpdateClubRequestDto request
+    ) {
+        return ApiResponse.ok(clubService.updateClub(currentUserId, clubId, request));
+    }
+
+    @Operation(summary = "클럽 삭제 (OWNER만, 빈 클럽일 때만)",
+            description = "이벤트·공지가 모두 없고 본인 외 멤버가 없을 때만 삭제됩니다. 그 외엔 409.")
+    @DeleteMapping("/{clubId}")
+    public ApiResponse<Void> deleteClub(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId
+    ) {
+        clubService.deleteClub(currentUserId, clubId);
+        return ApiResponse.ok(null);
     }
 
     @Operation(summary = "초대 코드 조회 (OWNER/ADMIN)")
