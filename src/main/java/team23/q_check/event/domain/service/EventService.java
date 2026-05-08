@@ -108,8 +108,11 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
-    public EventPageResponseDto getEvents(int page, int size) {
-        Page<Event> eventPage = eventRepository.findAll(PageRequest.of(page, size));
+    public EventPageResponseDto getEvents(int page, int size, Long clubId) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Event> eventPage = (clubId == null)
+                ? eventRepository.findAll(pageRequest)
+                : eventRepository.findByClub_Id(clubId, pageRequest);
         List<EventListItemDto> items = eventPage.getContent().stream()
                 .map(event -> new EventListItemDto(
                         event.getId(),

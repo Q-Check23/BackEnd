@@ -12,6 +12,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     long countByClub_Id(Long clubId);
 
+    org.springframework.data.domain.Page<Event> findByClub_Id(Long clubId, org.springframework.data.domain.Pageable pageable);
+
     @Query("SELECT e FROM Event e WHERE e.club.id IN :clubIds AND YEAR(e.startTime) = :year AND MONTH(e.startTime) = :month ORDER BY e.startTime ASC")
     List<Event> findByClubIdsAndYearMonth(@Param("clubIds") List<Long> clubIds,
                                           @Param("year") int year,

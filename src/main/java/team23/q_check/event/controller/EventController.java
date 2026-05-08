@@ -53,13 +53,14 @@ public class EventController {
         return ApiResponse.ok(eventService.createEvent(currentUserId, request));
     }
 
-    @Operation(summary = "행사 목록 조회 (페이징)")
+    @Operation(summary = "행사 목록 조회 (페이징, clubId로 필터 선택)")
     @GetMapping
     public ApiResponse<EventPageResponseDto> getEvents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long clubId
     ) {
-        return ApiResponse.ok(eventService.getEvents(page, size));
+        return ApiResponse.ok(eventService.getEvents(page, size, clubId));
     }
 
     @Operation(summary = "행사 상세 조회 (formFields 포함)")

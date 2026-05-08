@@ -78,7 +78,7 @@ class EventControllerTest {
 
     @Test
     void getEvents_returnsPagedItems() throws Exception {
-        when(eventService.getEvents(anyInt(), anyInt())).thenReturn(
+        when(eventService.getEvents(anyInt(), anyInt(), org.mockito.ArgumentMatchers.isNull())).thenReturn(
                 new EventPageResponseDto(
                         0, 10, 1, 1,
                         List.of(new EventListItemDto(
