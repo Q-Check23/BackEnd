@@ -155,7 +155,7 @@ class AttendanceServiceTest {
     }
 
     private Registration createRegistration(RegistrationStatus status) {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(
                 club,
                 "OT",

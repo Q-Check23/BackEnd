@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.club.dto.AddClubMemberRequestDto;
+import team23.q_check.club.dto.ClubDetailResponseDto;
 import team23.q_check.club.dto.ClubMemberResponseDto;
-import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
+import team23.q_check.club.dto.JoinClubRequestDto;
 import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
+import team23.q_check.club.dto.UpdateClubRequestDto;
 import team23.q_check.club.domain.service.ClubService;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
@@ -38,12 +40,22 @@ public class ClubController {
 
     @Operation(summary = "클럽 생성 (생성자는 OWNER로 자동 가입)")
     @PostMapping
-    public ApiResponse<ClubResponseDto> createClub(
+    public ApiResponse<MyClubResponseDto> createClub(
             @Parameter(hidden = true)
             @CurrentUserId Long currentUserId,
             @RequestBody CreateClubRequestDto request
     ) {
         return ApiResponse.ok(clubService.createClub(currentUserId, request));
+    }
+
+    @Operation(summary = "초대 코드로 클럽 가입")
+    @PostMapping("/join")
+    public ApiResponse<MyClubResponseDto> joinClub(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @RequestBody JoinClubRequestDto request
+    ) {
+        return ApiResponse.ok(clubService.joinClub(currentUserId, request));
     }
 
     @Operation(summary = "내가 속한 클럽 목록 조회")
@@ -53,6 +65,49 @@ public class ClubController {
             @CurrentUserId Long currentUserId
     ) {
         return ApiResponse.ok(clubService.getMyClubs(currentUserId));
+    }
+
+    @Operation(summary = "클럽 상세 조회 (멤버 전용)")
+    @GetMapping("/{clubId}")
+    public ApiResponse<ClubDetailResponseDto> getClubDetail(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId
+    ) {
+        return ApiResponse.ok(clubService.getClubDetail(currentUserId, clubId));
+    }
+
+    @Operation(summary = "클럽 정보 수정 (OWNER/ADMIN)")
+    @PutMapping("/{clubId}")
+    public ApiResponse<ClubDetailResponseDto> updateClub(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId,
+            @RequestBody UpdateClubRequestDto request
+    ) {
+        return ApiResponse.ok(clubService.updateClub(currentUserId, clubId, request));
+    }
+
+    @Operation(summary = "클럽 삭제 (OWNER만, 빈 클럽일 때만)",
+            description = "이벤트·공지가 모두 없고 본인 외 멤버가 없을 때만 삭제됩니다. 그 외엔 409.")
+    @DeleteMapping("/{clubId}")
+    public ApiResponse<Void> deleteClub(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId
+    ) {
+        clubService.deleteClub(currentUserId, clubId);
+        return ApiResponse.ok(null);
+    }
+
+    @Operation(summary = "초대 코드 조회 (OWNER/ADMIN)")
+    @GetMapping("/{clubId}/invite-code")
+    public ApiResponse<String> getInviteCode(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long clubId
+    ) {
+        return ApiResponse.ok(clubService.getInviteCode(currentUserId, clubId));
     }
 
     @Operation(summary = "클럽 멤버 목록 조회")

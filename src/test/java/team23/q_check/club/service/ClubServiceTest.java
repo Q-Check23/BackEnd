@@ -9,8 +9,8 @@ import team23.q_check.club.domain.model.ClubRole;
 import team23.q_check.club.domain.service.ClubAuthorizationService;
 import team23.q_check.club.domain.service.ClubService;
 import team23.q_check.club.dto.AddClubMemberRequestDto;
-import team23.q_check.club.dto.ClubResponseDto;
 import team23.q_check.club.dto.CreateClubRequestDto;
+import team23.q_check.club.dto.MyClubResponseDto;
 import team23.q_check.club.dto.UpdateClubMemberRoleRequestDto;
 import team23.q_check.club.domain.repository.ClubMemberRepository;
 import team23.q_check.club.domain.repository.ClubRepository;
@@ -33,6 +33,8 @@ class ClubServiceTest {
     private ClubMemberRepository clubMemberRepository;
     private UserRepository userRepository;
     private ClubAuthorizationService clubAuthorizationService;
+    private team23.q_check.event.domain.repository.EventRepository eventRepository;
+    private team23.q_check.notice.domain.repository.NoticeRepository noticeRepository;
     private ClubService clubService;
 
     @BeforeEach
@@ -41,7 +43,9 @@ class ClubServiceTest {
         clubMemberRepository = mock(ClubMemberRepository.class);
         userRepository = mock(UserRepository.class);
         clubAuthorizationService = mock(ClubAuthorizationService.class);
-        clubService = new ClubService(clubRepository, clubMemberRepository, userRepository, clubAuthorizationService);
+        eventRepository = mock(team23.q_check.event.domain.repository.EventRepository.class);
+        noticeRepository = mock(team23.q_check.notice.domain.repository.NoticeRepository.class);
+        clubService = new ClubService(clubRepository, clubMemberRepository, userRepository, clubAuthorizationService, eventRepository, noticeRepository);
     }
 
     @Test
@@ -50,6 +54,7 @@ class ClubServiceTest {
         setId(currentUser, 1L);
 
         when(clubRepository.existsByDiscordGuildId("guild-1")).thenReturn(false);
+        when(clubRepository.existsByInviteCode(any())).thenReturn(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(currentUser));
         when(clubRepository.save(any(Club.class))).thenAnswer(invocation -> {
             Club club = invocation.getArgument(0);
@@ -57,13 +62,14 @@ class ClubServiceTest {
             return club;
         });
 
-        ClubResponseDto result = clubService.createClub(
+        MyClubResponseDto result = clubService.createClub(
                 1L,
                 new CreateClubRequestDto("UMC", "desc", "guild-1", null)
         );
 
-        assertEquals(100L, result.id());
-        assertEquals("UMC", result.name());
+        assertEquals(100L, result.clubId());
+        assertEquals("UMC", result.clubName());
+        assertEquals(ClubRole.OWNER, result.myRole());
 
         ArgumentCaptor<ClubMember> membershipCaptor = ArgumentCaptor.forClass(ClubMember.class);
         verify(clubMemberRepository).save(membershipCaptor.capture());
@@ -85,7 +91,7 @@ class ClubServiceTest {
 
     @Test
     void leaveClub_lastOwner_throwsConflict() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User owner = new User("dev-1", null, "owner", null);
         setId(owner, 1L);
@@ -105,7 +111,7 @@ class ClubServiceTest {
 
     @Test
     void leaveClub_memberLeavesSuccessfully() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User member = new User("dev-2", null, "member", null);
         setId(member, 2L);
@@ -121,7 +127,7 @@ class ClubServiceTest {
 
     @Test
     void leaveClub_ownerWhenAnotherOwnerExists_succeeds() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User owner = new User("dev-1", null, "owner", null);
         setId(owner, 1L);
@@ -138,7 +144,7 @@ class ClubServiceTest {
 
     @Test
     void removeClubMember_adminCannotRemoveOwner() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
@@ -162,7 +168,7 @@ class ClubServiceTest {
 
     @Test
     void removeClubMember_cannotRemoveSelf() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
@@ -181,7 +187,7 @@ class ClubServiceTest {
 
     @Test
     void removeClubMember_lastOwnerByOwner_throwsConflict() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User owner1 = new User("dev-1", null, "owner1", null);
         setId(owner1, 1L);
@@ -205,7 +211,7 @@ class ClubServiceTest {
 
     @Test
     void removeClubMember_adminRemovesMemberSuccessfully() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);
@@ -226,7 +232,7 @@ class ClubServiceTest {
 
     @Test
     void updateClubMemberRole_adminCannotAssignOwner() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         User admin = new User("dev-1", null, "admin", null);
         setId(admin, 1L);

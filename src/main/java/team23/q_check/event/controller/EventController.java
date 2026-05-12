@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.event.dto.CreateEventRequestDto;
+import team23.q_check.event.dto.EventDashboardResponseDto;
 import team23.q_check.event.dto.CreateRegistrationRequestDto;
 import team23.q_check.event.dto.CreateRegistrationResponseDto;
 import team23.q_check.event.dto.AdminRegistrationItemDto;
@@ -53,13 +54,14 @@ public class EventController {
         return ApiResponse.ok(eventService.createEvent(currentUserId, request));
     }
 
-    @Operation(summary = "행사 목록 조회 (페이징)")
+    @Operation(summary = "행사 목록 조회 (페이징, clubId로 필터 선택)")
     @GetMapping
     public ApiResponse<EventPageResponseDto> getEvents(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long clubId
     ) {
-        return ApiResponse.ok(eventService.getEvents(page, size));
+        return ApiResponse.ok(eventService.getEvents(page, size, clubId));
     }
 
     @Operation(summary = "행사 상세 조회 (formFields 포함)")
@@ -124,6 +126,16 @@ public class EventController {
             @PathVariable Long eventId
     ) {
         return ApiResponse.ok(registrationService.getMyRegistration(currentUserId, eventId));
+    }
+
+    @Operation(summary = "행사 대시보드 통계 (club ADMIN 이상)")
+    @GetMapping("/{eventId}/dashboard")
+    public ApiResponse<EventDashboardResponseDto> getEventDashboard(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId
+    ) {
+        return ApiResponse.ok(eventService.getEventDashboard(currentUserId, eventId));
     }
 
     @Operation(summary = "행사 참가자 목록 조회 (club ADMIN 이상)")

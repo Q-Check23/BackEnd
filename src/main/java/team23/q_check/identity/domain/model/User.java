@@ -1,11 +1,13 @@
 package team23.q_check.identity.domain.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
+@SQLRestriction("deleted_at IS NULL")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +27,9 @@ public class User {
 
     @Column(length = 512)
     private String refreshToken;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -70,5 +75,14 @@ public class User {
 
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public void markDeleted() {
+        this.deletedAt = LocalDateTime.now();
+        this.refreshToken = null;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
     }
 }

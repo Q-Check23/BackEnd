@@ -64,7 +64,7 @@ class RegistrationServiceTest {
 
     @Test
     void createRegistration_whenEventInactive_throwsConflict() {
-        Event event = new Event(new Club("UMC", "desc", "guild-1", null), "OT",
+        Event event = new Event(new Club("UMC", "desc", "guild-1", null, "INV12345"), "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 null,
@@ -80,7 +80,7 @@ class RegistrationServiceTest {
 
     @Test
     void createRegistration_whenRequiredFieldMissing_throwsBadRequest() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -109,7 +109,7 @@ class RegistrationServiceTest {
 
     @Test
     void createRegistration_whenSelectOutOfOptions_throwsBadRequest() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -140,7 +140,7 @@ class RegistrationServiceTest {
 
     @Test
     void createRegistration_whenDuplicate_throwsConflict() {
-        Event event = new Event(new Club("UMC", "desc", "guild-1", null), "OT",
+        Event event = new Event(new Club("UMC", "desc", "guild-1", null, "INV12345"), "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 null,
@@ -157,7 +157,7 @@ class RegistrationServiceTest {
 
     @Test
     void getEventRegistrations_requiresAdminRole() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -177,7 +177,7 @@ class RegistrationServiceTest {
 
     @Test
     void getMyRegistration_returnsAnswers() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
                 LocalDateTime.parse("2026-03-10T19:00:00"),
@@ -204,7 +204,7 @@ class RegistrationServiceTest {
 
     @Test
     void cancelMyRegistration_whenRegistered_transitionsToCanceled() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(1).plusHours(2),
@@ -224,7 +224,7 @@ class RegistrationServiceTest {
 
     @Test
     void cancelMyRegistration_whenAlreadyCheckedIn_throwsConflict() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(1).plusHours(2),
@@ -246,7 +246,7 @@ class RegistrationServiceTest {
 
     @Test
     void cancelMyRegistration_whenAlreadyCanceled_throwsConflict() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(1).plusHours(2),
@@ -268,7 +268,7 @@ class RegistrationServiceTest {
 
     @Test
     void cancelMyRegistration_whenEventStarted_throwsConflict() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         Event event = new Event(club, "OT",
                 LocalDateTime.now().minusHours(1),
                 LocalDateTime.now().plusHours(1),

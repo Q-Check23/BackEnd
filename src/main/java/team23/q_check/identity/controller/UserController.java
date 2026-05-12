@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import team23.q_check.common.auth.CurrentUserId;
 import team23.q_check.common.response.ApiResponse;
 import team23.q_check.identity.dto.MyUserResponseDto;
+import team23.q_check.identity.dto.MyUserStatsResponseDto;
 import team23.q_check.identity.dto.UpdateMyUserRequestDto;
 import team23.q_check.identity.dto.UserSearchResultDto;
 import team23.q_check.identity.domain.service.UserService;
@@ -48,6 +50,27 @@ public class UserController {
             @RequestBody UpdateMyUserRequestDto request
     ) {
         return ApiResponse.ok(userService.updateMyUser(currentUserId, request));
+    }
+
+    @Operation(summary = "내 활동 통계 조회")
+    @GetMapping("/me/stats")
+    public ApiResponse<MyUserStatsResponseDto> getMyStats(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId
+    ) {
+        return ApiResponse.ok(userService.getMyStats(currentUserId));
+    }
+
+    @Operation(summary = "회원 탈퇴 (soft-delete)",
+            description = "deleted_at을 현재 시각으로 표시하고 refresh token을 무효화합니다. " +
+                    "이후 모든 user 조회는 이 사용자를 반환하지 않습니다.")
+    @DeleteMapping("/me")
+    public ApiResponse<Void> deleteMyUser(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId
+    ) {
+        userService.deleteMyUser(currentUserId);
+        return ApiResponse.ok(null);
     }
 
     @Operation(

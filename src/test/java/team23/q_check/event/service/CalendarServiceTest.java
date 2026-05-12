@@ -196,7 +196,7 @@ class CalendarServiceTest {
     }
 
     private Club newClub(Long id, String name) throws Exception {
-        Club club = new Club(name, "desc", "guild-" + id, null);
+        Club club = new Club(name, "desc", "guild-" + id, null, "INV" + id);
         setId(club, id);
         return club;
     }

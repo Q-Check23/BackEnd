@@ -196,7 +196,7 @@ class EventPhotoServiceTest {
     }
 
     private Event newEvent() throws Exception {
-        Club club = new Club("UMC", "desc", "guild-1", null);
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
         Event event = new Event(club, "OT",
                 LocalDateTime.parse("2026-03-10T19:00:00"),
