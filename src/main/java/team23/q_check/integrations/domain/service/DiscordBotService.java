@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import team23.q_check.common.config.DiscordProperties;
+import team23.q_check.common.error.AppException;
+import team23.q_check.common.error.ErrorCode;
 
 import java.util.Map;
 
@@ -31,8 +33,8 @@ public class DiscordBotService {
      */
     public String createTextChannel(String guildId, String channelName) {
         if (discordProps.botToken() == null || discordProps.botToken().isBlank()) {
-            log.debug("discord.bot_token is not configured; skipping channel creation");
-            return null;
+            throw new AppException(ErrorCode.INTERNAL_ERROR,
+                    "Discord bot token is not configured; cannot create channel");
         }
 
         long startNanos = System.nanoTime();
@@ -46,13 +48,18 @@ public class DiscordBotService {
                     .body(ChannelResponse.class);
 
             String channelId = response != null ? response.id() : null;
+            if (channelId == null) {
+                throw new AppException(ErrorCode.INTERNAL_ERROR,
+                        "Discord API returned empty channel ID");
+            }
             log.info("discord.create_channel status=200 guildId={} channelId={} latencyMs={}",
                     guildId, channelId, elapsedMs(startNanos));
             return channelId;
         } catch (RestClientException e) {
             log.warn("discord.create_channel status=failed guildId={} latencyMs={} msg={}",
                     guildId, elapsedMs(startNanos), e.getMessage());
-            return null;
+            throw new AppException(ErrorCode.INTERNAL_ERROR,
+                    "Failed to create Discord channel: " + e.getMessage());
         }
     }
 

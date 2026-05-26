@@ -98,9 +98,15 @@ public class EventService {
         if (Boolean.TRUE.equals(request.createDiscordChannel())) {
             if (request.discordChannelId() != null && !request.discordChannelId().isBlank()) {
                 discordChannelId = request.discordChannelId().trim();
-            } else if (club.getDiscordGuildId() != null
-                    && !club.getDiscordGuildId().isBlank()
-                    && discordBotService.isBotConfigured()) {
+            } else {
+                if (club.getDiscordGuildId() == null || club.getDiscordGuildId().isBlank()) {
+                    throw new AppException(ErrorCode.INVALID_REQUEST,
+                            "Club does not have a Discord server configured");
+                }
+                if (!discordBotService.isBotConfigured()) {
+                    throw new AppException(ErrorCode.INTERNAL_ERROR,
+                            "Discord bot is not configured on the server");
+                }
                 discordChannelId = discordBotService.createTextChannel(
                         club.getDiscordGuildId(), request.title().trim());
             }
