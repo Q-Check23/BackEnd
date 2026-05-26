@@ -55,6 +55,7 @@ discord:
   oauth-url: https://discord.com/oauth2/authorize
   token-url: https://discord.com/api/oauth2/token
   user-url: https://discord.com/api/users/@me
+  bot-token: ${DISCORD_BOT_TOKEN:}        # Discord Bot Token (선택 — 행사 생성 시 채널 자동 생성용)
 
 frontend:
   # OAuth 처리 후 토큰을 query string으로 실어 redirect 할 프론트 콜백 URL

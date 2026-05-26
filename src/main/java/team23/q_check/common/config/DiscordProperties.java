@@ -1,5 +1,6 @@
 package team23.q_check.common.config;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
@@ -12,5 +13,6 @@ public record DiscordProperties(
         @NotBlank String redirectUri,
         @NotBlank String oauthUrl,
         @NotBlank String tokenUrl,
-        @NotBlank String userUrl
+        @NotBlank String userUrl,
+        @Nullable String botToken
 ) {}

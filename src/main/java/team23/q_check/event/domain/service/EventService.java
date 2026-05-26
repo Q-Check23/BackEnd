@@ -30,6 +30,7 @@ import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
 import team23.q_check.event.domain.repository.RegistrationRepository;
+import team23.q_check.integrations.domain.service.DiscordBotService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class EventService {
     private final EventPhotoRepository eventPhotoRepository;
     private final ClubRepository clubRepository;
     private final ClubAuthorizationService clubAuthorizationService;
+    private final DiscordBotService discordBotService;
     private final ObjectMapper objectMapper;
 
     public EventService(
@@ -58,6 +60,7 @@ public class EventService {
             EventPhotoRepository eventPhotoRepository,
             ClubRepository clubRepository,
             ClubAuthorizationService clubAuthorizationService,
+            DiscordBotService discordBotService,
             ObjectMapper objectMapper
     ) {
         this.eventRepository = eventRepository;
@@ -68,6 +71,7 @@ public class EventService {
         this.eventPhotoRepository = eventPhotoRepository;
         this.clubRepository = clubRepository;
         this.clubAuthorizationService = clubAuthorizationService;
+        this.discordBotService = discordBotService;
         this.objectMapper = objectMapper;
     }
 
@@ -90,6 +94,15 @@ public class EventService {
             throw new AppException(ErrorCode.INVALID_REQUEST, "registerFee must be zero or positive");
         }
 
+        String discordChannelId = request.discordChannelId();
+        if (discordChannelId == null
+                && club.getDiscordGuildId() != null
+                && !club.getDiscordGuildId().isBlank()
+                && discordBotService.isBotConfigured()) {
+            discordChannelId = discordBotService.createTextChannel(
+                    club.getDiscordGuildId(), request.title().trim());
+        }
+
         Event event = new Event(
                 club,
                 request.title().trim(),
@@ -97,7 +110,7 @@ public class EventService {
                 startTime,
                 endTime,
                 request.location(),
-                request.discordChannelId(),
+                discordChannelId,
                 true,
                 registerFee
         );
