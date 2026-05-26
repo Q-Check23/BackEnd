@@ -91,9 +91,10 @@ public class AttendanceService {
         );
         attendanceLogRepository.save(attendanceLog);
 
-        String displayName = checker.getRealName() != null && !checker.getRealName().isBlank()
-                ? checker.getRealName()
-                : checker.getUsername();
+        User attendee = registration.getUser();
+        String displayName = attendee.getRealName() != null && !attendee.getRealName().isBlank()
+                ? attendee.getRealName()
+                : attendee.getUsername();
 
         return new CheckInResponseDto(registration.getId(), now.toString(), displayName);
     }

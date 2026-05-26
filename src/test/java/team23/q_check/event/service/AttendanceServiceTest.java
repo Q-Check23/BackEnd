@@ -73,7 +73,7 @@ class AttendanceServiceTest {
 
         assertEquals(RegistrationStatus.CHECKED_IN, registration.getStatus());
         assertEquals(registration.getId(), result.registrationId());
-        assertEquals("관리자", result.username());
+        assertEquals("member", result.username()); // 참가자(attendee) 이름 반환
         verify(attendanceLogRepository).save(any());
         verify(clubAuthorizationService).requireAdminOrOwner(any(), eq(1L));
     }
@@ -100,7 +100,7 @@ class AttendanceServiceTest {
 
         assertEquals(RegistrationStatus.CHECKED_IN, registration.getStatus());
         assertEquals(200L, result.registrationId());
-        assertEquals("관리자", result.username());
+        assertEquals("member", result.username()); // 참가자(attendee) 이름 반환
 
         ArgumentCaptor<AttendanceLog> captor = ArgumentCaptor.forClass(AttendanceLog.class);
         verify(attendanceLogRepository).save(captor.capture());
