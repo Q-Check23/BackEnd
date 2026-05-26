@@ -10,6 +10,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     boolean existsByUsername(String username);
 
-    /** 닉네임 부분일치 검색 (대소문자 무시). 검색 폭주를 막기 위해 상한을 둔다. */
+    /** 아이디 부분일치 검색 (대소문자 무시). 검색 폭주를 막기 위해 상한을 둔다. */
     List<User> findTop20ByUsernameContainingIgnoreCaseOrderByUsernameAsc(String fragment);
 }

@@ -60,15 +60,15 @@ public class UserService {
     }
 
     /**
-     * 닉네임(부분일치) 또는 이메일(정확매치)로 사용자를 검색한다.
+     * 아이디(부분일치) 또는 이메일(정확매치)로 사용자를 검색한다.
      * 둘 중 하나는 비어있지 않아야 하며, 응답에 이메일은 포함하지 않는다.
      */
     @Transactional(readOnly = true)
-    public List<UserSearchResultDto> searchUsers(String nickname, String email) {
-        boolean hasNickname = nickname != null && !nickname.isBlank();
+    public List<UserSearchResultDto> searchUsers(String username, String email) {
+        boolean hasUsername = username != null && !username.isBlank();
         boolean hasEmail = email != null && !email.isBlank();
-        if (!hasNickname && !hasEmail) {
-            throw new AppException(ErrorCode.INVALID_REQUEST, "nickname or email is required");
+        if (!hasUsername && !hasEmail) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "username or email is required");
         }
 
         if (hasEmail) {
@@ -78,7 +78,7 @@ public class UserService {
         }
 
         return userRepository
-                .findTop20ByUsernameContainingIgnoreCaseOrderByUsernameAsc(nickname.trim())
+                .findTop20ByUsernameContainingIgnoreCaseOrderByUsernameAsc(username.trim())
                 .stream()
                 .map(this::toSearchDto)
                 .toList();

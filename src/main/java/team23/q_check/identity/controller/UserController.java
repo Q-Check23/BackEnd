@@ -75,15 +75,15 @@ public class UserController {
 
     @Operation(
             summary = "사용자 검색",
-            description = "닉네임(부분일치) 또는 이메일(정확매치)로 사용자를 검색합니다. " +
+            description = "아이디(부분일치) 또는 이메일(정확매치)로 사용자를 검색합니다. " +
                     "둘 중 하나는 반드시 입력해야 하며, 결과에는 이메일이 포함되지 않습니다. " +
-                    "닉네임 검색은 최대 20명까지 반환합니다."
+                    "아이디 검색은 최대 20명까지 반환합니다."
     )
     @GetMapping("/search")
     public ApiResponse<List<UserSearchResultDto>> searchUsers(
-            @Parameter(description = "닉네임 부분일치 (대소문자 무시)") @RequestParam(required = false) String nickname,
+            @Parameter(description = "아이디 부분일치 (대소문자 무시)") @RequestParam(required = false) String username,
             @Parameter(description = "이메일 정확매치") @RequestParam(required = false) String email
     ) {
-        return ApiResponse.ok(userService.searchUsers(nickname, email));
+        return ApiResponse.ok(userService.searchUsers(username, email));
     }
 }

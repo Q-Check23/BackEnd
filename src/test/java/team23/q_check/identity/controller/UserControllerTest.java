@@ -81,13 +81,13 @@ class UserControllerTest {
     }
 
     @Test
-    void searchUsers_byNickname_returnsList() throws Exception {
+    void searchUsers_byUsername_returnsList() throws Exception {
         when(userService.searchUsers("kim", null)).thenReturn(List.of(
                 new UserSearchResultDto(1L, "kimjyun", "김지윤"),
                 new UserSearchResultDto(2L, "kimminseo", null)
         ));
 
-        mockMvc.perform(get("/api/users/search?nickname=kim").header("X-USER-ID", "1"))
+        mockMvc.perform(get("/api/users/search?username=kim").header("X-USER-ID", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.length()").value(2))

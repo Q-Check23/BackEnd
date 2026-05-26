@@ -69,7 +69,7 @@ class UserServiceTest {
     }
 
     @Test
-    void searchUsers_byNickname_returnsMatchingList() throws Exception {
+    void searchUsers_byUsername_returnsMatchingList() throws Exception {
         User u1 = new User("dev-1", null, "kimjyun", null);
         u1.updateRealName("김지윤");
         setId(u1, 1L);
@@ -118,7 +118,7 @@ class UserServiceTest {
     }
 
     @Test
-    void searchUsers_emailTakesPriorityOverNickname() throws Exception {
+    void searchUsers_emailTakesPriorityOverUsername() throws Exception {
         User u1 = new User("dev-1", null, "kimjyun", null);
         setId(u1, 1L);
         when(userRepository.findByEmail("kim@example.com")).thenReturn(Optional.of(u1));

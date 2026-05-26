@@ -127,10 +127,10 @@ class AuthControllerTest {
     }
 
     @Test
-    void checkNickname_returnsAvailability() throws Exception {
-        when(authService.isNicknameAvailable("free-nick")).thenReturn(true);
+    void checkUsername_returnsAvailability() throws Exception {
+        when(authService.isUsernameAvailable("free-nick")).thenReturn(true);
 
-        mockMvc.perform(get("/api/auth/nickname/check").param("nickname", "free-nick"))
+        mockMvc.perform(get("/api/auth/username/check").param("username", "free-nick"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.available").value(true));
     }
@@ -144,7 +144,7 @@ class AuthControllerTest {
                         .header("Authorization", "Bearer signup-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "name": "김지윤", "nickname": "kimjyun", "email": "kim@example.com" }
+                                { "name": "김지윤", "username": "kimjyun", "email": "kim@example.com" }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.userId").value(7))
@@ -157,7 +157,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "name": "김지윤", "nickname": "kimjyun", "email": "kim@example.com" }
+                                { "name": "김지윤", "username": "kimjyun", "email": "kim@example.com" }
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
@@ -169,7 +169,7 @@ class AuthControllerTest {
                         .header("Authorization", "signup-token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "name": "김지윤", "nickname": "kimjyun", "email": "kim@example.com" }
+                                { "name": "김지윤", "username": "kimjyun", "email": "kim@example.com" }
                                 """))
                 .andExpect(status().isUnauthorized());
     }

@@ -99,12 +99,12 @@ public class AuthController {
                 .toUriString();
     }
 
-    @Operation(summary = "닉네임 중복 확인")
-    @GetMapping("/nickname/check")
-    public ApiResponse<NicknameCheckResponseDto> checkNickname(
-            @Parameter(description = "확인할 닉네임") @RequestParam String nickname
+    @Operation(summary = "아이디 중복 확인")
+    @GetMapping("/username/check")
+    public ApiResponse<UsernameCheckResponseDto> checkUsername(
+            @Parameter(description = "확인할 아이디") @RequestParam String username
     ) {
-        return ApiResponse.ok(new NicknameCheckResponseDto(authService.isNicknameAvailable(nickname)));
+        return ApiResponse.ok(new UsernameCheckResponseDto(authService.isUsernameAvailable(username)));
     }
 
     @Operation(

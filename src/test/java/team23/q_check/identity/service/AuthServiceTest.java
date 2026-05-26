@@ -183,7 +183,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void signup_nicknameTaken_throwsConflict() {
+    void signup_usernameTaken_throwsConflict() {
         when(jwtService.isSignupToken("signup-token")).thenReturn(true);
         when(jwtService.extractEmail("signup-token")).thenReturn("kim@example.com");
         when(userRepository.findByEmail("kim@example.com")).thenReturn(Optional.empty());
@@ -247,12 +247,12 @@ class AuthServiceTest {
     }
 
     @Test
-    void isNicknameAvailable_reflectsRepositoryExistence() {
+    void isUsernameAvailable_reflectsRepositoryExistence() {
         when(userRepository.existsByUsername("free-nick")).thenReturn(false);
         when(userRepository.existsByUsername("taken-nick")).thenReturn(true);
 
-        assertTrue(authService.isNicknameAvailable("free-nick"));
-        assertFalse(authService.isNicknameAvailable("taken-nick"));
+        assertTrue(authService.isUsernameAvailable("free-nick"));
+        assertFalse(authService.isUsernameAvailable("taken-nick"));
     }
 
     private void setId(User user, Long id) throws Exception {

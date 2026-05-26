@@ -68,12 +68,12 @@ public class AuthService {
             throw new AppException(ErrorCode.CONFLICT, "이미 가입된 이메일입니다");
         }
 
-        if (userRepository.existsByUsername(request.nickname())) {
-            throw new AppException(ErrorCode.CONFLICT, "이미 사용 중인 닉네임입니다");
+        if (userRepository.existsByUsername(request.username())) {
+            throw new AppException(ErrorCode.CONFLICT, "이미 사용 중인 아이디입니다");
         }
 
         String discordId = jwtService.extractDiscordId(signupToken);
-        User user = new User(discordId, request.email(), request.nickname(), request.name());
+        User user = new User(discordId, request.email(), request.username(), request.name());
         userRepository.save(user);
 
         String accessToken = jwtService.issueAccessToken(user.getId());
@@ -120,8 +120,8 @@ public class AuthService {
         userRepository.findById(userId).ifPresent(user -> user.updateRefreshToken(null));
     }
 
-    public boolean isNicknameAvailable(String nickname) {
-        return !userRepository.existsByUsername(nickname);
+    public boolean isUsernameAvailable(String username) {
+        return !userRepository.existsByUsername(username);
     }
 
     public record CodeResult(boolean isNewUser, String clientToken, String refreshToken) {}
