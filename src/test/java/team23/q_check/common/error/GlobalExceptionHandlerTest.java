@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -63,6 +64,14 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void missingRequiredCookie_returnsUnauthorized() throws Exception {
+        mockMvc.perform(get("/test/errors/with-cookie"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
+    }
+
+    @Test
     void missingRequiredQueryParam_returnsBadRequest() throws Exception {
         mockMvc.perform(get("/test/errors/with-param"))
                 .andExpect(status().isBadRequest())
@@ -100,6 +109,10 @@ class GlobalExceptionHandlerTest {
 
         @GetMapping("/test/errors/with-param")
         public void requireParam(@RequestParam("q") String q) {
+        }
+
+        @GetMapping("/test/errors/with-cookie")
+        public void requireCookie(@CookieValue("refresh_token") String refreshToken) {
         }
 
         @PostMapping("/test/errors/with-body")
