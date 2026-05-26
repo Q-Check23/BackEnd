@@ -34,14 +34,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 management:
-  # actuator 는 별도 포트로 격리. docker-compose 의 8080 만 호스트로 노출하므로 외부 접근 차단됨.
-  # 사용 시 컨테이너 내부에서: docker compose exec app curl http://localhost:8081/actuator/loggers/team23.q_check
-  server:
-    port: 8081
   endpoints:
     web:
       exposure:
-        include: health,prometheus,info,loggers
+        include: health,prometheus,info
   metrics:
     tags:
       application: qcheck

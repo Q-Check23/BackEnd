@@ -94,7 +94,6 @@ JWT 타입 분리: access / refresh / signup 토큰은 클레임 `type` 으로 �
 | 위치 | 메시지 | 레벨 | 트리거 |
 |---|---|---|---|
 | `RequestLoggingFilter` | `http.access method= path= status= latencyMs=` | INFO | 모든 요청, 응답 직후 |
-| `HttpExchangeLoggingFilter` (logger=`http.exchange`) | `http.exchange method= path= reqHeaders= reqBody= status= resHeaders= resBody=` | DEBUG | 모든 요청 (DEBUG 활성 시에만). 평소엔 꺼두고 인시던트 시 `POST /actuator/loggers/http.exchange {"configuredLevel":"DEBUG"}` 로 토글. 민감 헤더 마스킹·본문 4KB 캡·바이너리 사이즈만 표시 |
 | `JwtAuthInterceptor` | `auth.dev_fallback used userId= path=` | WARN | dev-auth 헤더로 인증 성공 (프로덕션 오설정 감지용) |
 | `JwtAuthInterceptor` | `auth.dev_fallback invalid value=` | WARN | `X-USER-ID` 가 숫자가 아님 |
 | `JwtAuthInterceptor` | `auth.missing path=` | INFO | 인증 헤더 없음 |
