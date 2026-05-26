@@ -23,17 +23,13 @@ public class DiscordBotController {
     }
 
     @GetMapping("/bot-invite-url")
-    public ResponseEntity<ApiResponse<String>> getBotInviteUrl() {
-        if (!discordBotService.isBotConfigured()) {
-            return ResponseEntity.notFound().build();
-        }
-
+    public ApiResponse<String> getBotInviteUrl() {
         String url = String.format(
                 "https://discord.com/oauth2/authorize?client_id=%s&scope=bot&permissions=%d",
                 discordProps.clientId(),
                 BOT_PERMISSIONS
         );
 
-        return ResponseEntity.ok(ApiResponse.ok(url));
+        return ApiResponse.ok(url);
     }
 }
