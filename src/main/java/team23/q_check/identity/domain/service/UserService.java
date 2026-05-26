@@ -47,6 +47,8 @@ public class UserService {
         User user = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
         user.updateRealName(request.realName());
+        user.updateUsername(request.username());
+        user.updatePhone(request.phone());
         return toDto(user);
     }
 
@@ -83,7 +85,7 @@ public class UserService {
     }
 
     private MyUserResponseDto toDto(User user) {
-        return new MyUserResponseDto(user.getId(), user.getUsername(), user.getRealName());
+        return new MyUserResponseDto(user.getId(), user.getUsername(), user.getRealName(), user.getEmail(), user.getPhone());
     }
 
     private UserSearchResultDto toSearchDto(User user) {

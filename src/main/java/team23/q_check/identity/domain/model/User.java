@@ -25,6 +25,9 @@ public class User {
     @Column(unique = true)
     private String email;
 
+    @Column(nullable = true)
+    private String phone;
+
     @Column(length = 512)
     private String refreshToken;
 
@@ -65,12 +68,26 @@ public class User {
         return email;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
     public String getRefreshToken() {
         return refreshToken;
     }
 
     public void updateRealName(String realName) {
         this.realName = realName;
+    }
+
+    public void updateUsername(String username) {
+        if (username != null && !username.isBlank()) {
+            this.username = username;
+        }
+    }
+
+    public void updatePhone(String phone) {
+        this.phone = phone;
     }
 
     public void updateRefreshToken(String refreshToken) {

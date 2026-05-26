@@ -9,6 +9,10 @@ public record MyUserResponseDto(
         @Schema(example = "qcheck_user")
         String username,
         @Schema(example = "김지윤")
-        String realName
+        String realName,
+        @Schema(example = "user@example.com")
+        String email,
+        @Schema(example = "010-1234-5678")
+        String phone
 ) {
 }
