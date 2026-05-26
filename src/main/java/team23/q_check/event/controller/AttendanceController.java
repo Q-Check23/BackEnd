@@ -13,6 +13,7 @@ import team23.q_check.common.response.ApiResponse;
 import team23.q_check.event.dto.CheckInRequestDto;
 import team23.q_check.event.dto.CheckInResponseDto;
 import team23.q_check.event.dto.ManualCheckInRequestDto;
+import team23.q_check.event.dto.SelfCheckInRequestDto;
 import team23.q_check.event.domain.service.AttendanceService;
 
 @Tag(name = "Attendance", description = "Attendance API")
@@ -35,6 +36,19 @@ public class AttendanceController {
             @RequestBody CheckInRequestDto request
     ) {
         return ApiResponse.ok(attendanceService.checkIn(currentUserId, request.qrToken()));
+    }
+
+    @Operation(summary = "셀프 체크인 (참가자가 행사 QR 스캔)",
+            description = "참가자가 행사 QR 코드를 스캔하여 본인 출석을 처리합니다. " +
+                    "해당 행사에 사전 등록(REGISTERED)된 상태여야 합니다. " +
+                    "이미 CHECKED_IN 이면 409, 등록이 없으면 404.")
+    @PostMapping("/self-check-in")
+    public ApiResponse<CheckInResponseDto> selfCheckIn(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @RequestBody SelfCheckInRequestDto request
+    ) {
+        return ApiResponse.ok(attendanceService.selfCheckIn(currentUserId, request.eventId()));
     }
 
     @Operation(summary = "수동 체크인 (club ADMIN 이상)",

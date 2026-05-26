@@ -50,6 +50,48 @@ public class AttendanceService {
     }
 
     /**
+     * 참가자가 행사 QR을 스캔하여 본인 체크인을 처리한다.
+     */
+    @Transactional
+    public CheckInResponseDto selfCheckIn(Long currentUserId, Long eventId) {
+        if (eventId == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "eventId is required");
+        }
+
+        Registration registration = registrationRepository.findByEvent_IdAndUser_Id(eventId, currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Registration not found for this event"));
+
+        if (registration.getStatus() == RegistrationStatus.CHECKED_IN) {
+            throw new AppException(ErrorCode.CONFLICT, "Already checked in");
+        }
+
+        if (registration.getStatus() == RegistrationStatus.CANCELED) {
+            throw new AppException(ErrorCode.CONFLICT, "Registration has been canceled");
+        }
+
+        User attendee = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
+
+        LocalDateTime now = LocalDateTime.now();
+        registration.updateStatus(RegistrationStatus.CHECKED_IN);
+
+        AttendanceLog attendanceLog = new AttendanceLog(
+                registration.getEvent(),
+                registration,
+                attendee,
+                now,
+                AttendanceMethod.QR
+        );
+        attendanceLogRepository.save(attendanceLog);
+
+        String displayName = attendee.getRealName() != null && !attendee.getRealName().isBlank()
+                ? attendee.getRealName()
+                : attendee.getUsername();
+
+        return new CheckInResponseDto(registration.getId(), now.toString(), displayName);
+    }
+
+    /**
      * 관리자가 registrationId로 직접 체크인을 처리한다.
      * QR 인식 실패·지각 등 운영 상황에서 사용한다.
      */
