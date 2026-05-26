@@ -19,7 +19,10 @@ public record CreateEventRequestDto(
         String endTime,
         @Schema(example = "서울 강남구 스타트업 캠퍼스")
         String location,
-        @Schema(description = "행사 알림이 갈 디스코드 채널 ID", example = "1234567890")
+        @Schema(description = "디스코드 채널 생성 여부 (true면 채널 생성, false/null이면 생성 안 함)", example = "true")
+        Boolean createDiscordChannel,
+        @Schema(description = "기존 디스코드 채널 ID (createDiscordChannel=true이고 이 값이 있으면 새 채널을 생성하지 않고 이 채널 사용)",
+                example = "1234567890")
         String discordChannelId,
         @Schema(description = "참가비(원)", example = "10000")
         BigDecimal registerFee,

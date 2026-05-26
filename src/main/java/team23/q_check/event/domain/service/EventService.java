@@ -94,13 +94,16 @@ public class EventService {
             throw new AppException(ErrorCode.INVALID_REQUEST, "registerFee must be zero or positive");
         }
 
-        String discordChannelId = request.discordChannelId();
-        if (discordChannelId == null
-                && club.getDiscordGuildId() != null
-                && !club.getDiscordGuildId().isBlank()
-                && discordBotService.isBotConfigured()) {
-            discordChannelId = discordBotService.createTextChannel(
-                    club.getDiscordGuildId(), request.title().trim());
+        String discordChannelId = null;
+        if (Boolean.TRUE.equals(request.createDiscordChannel())) {
+            if (request.discordChannelId() != null && !request.discordChannelId().isBlank()) {
+                discordChannelId = request.discordChannelId().trim();
+            } else if (club.getDiscordGuildId() != null
+                    && !club.getDiscordGuildId().isBlank()
+                    && discordBotService.isBotConfigured()) {
+                discordChannelId = discordBotService.createTextChannel(
+                        club.getDiscordGuildId(), request.title().trim());
+            }
         }
 
         Event event = new Event(
