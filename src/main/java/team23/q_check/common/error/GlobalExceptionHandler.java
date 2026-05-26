@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -60,6 +61,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
                 .body(ApiResponse.error(errorCode, e.getMessage()));
+    }
+
+    /**
+     * 필수 쿠키 누락은 401로 매핑한다. 현재 유일한 필수 쿠키는 refresh_token 이고,
+     * 그 부재는 곧 "갱신할 세션 없음"을 뜻하므로 자동 로그인 시도가 catch-all 500이 아니라
+     * 401로 떨어져 클라이언트가 로그인 흐름으로 분기할 수 있게 한다.
+     */
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingCookie(MissingRequestCookieException e) {
+        log.info("request.missing_cookie cookie={} code={}", e.getCookieName(), ErrorCode.UNAUTHORIZED.getCode());
+        return ResponseEntity
+                .status(ErrorCode.UNAUTHORIZED.getHttpStatus())
+                .body(ApiResponse.error(ErrorCode.UNAUTHORIZED, e.getMessage()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

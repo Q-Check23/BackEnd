@@ -55,7 +55,7 @@ class UserServiceTest {
         setId(user, 1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        MyUserResponseDto result = userService.updateMyUser(1L, new UpdateMyUserRequestDto("홍길동"));
+        MyUserResponseDto result = userService.updateMyUser(1L, new UpdateMyUserRequestDto("홍길동", null, null));
 
         assertEquals("홍길동", result.realName());
         assertEquals("홍길동", user.getRealName());
