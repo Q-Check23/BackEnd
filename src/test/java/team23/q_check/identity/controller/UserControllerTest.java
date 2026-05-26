@@ -40,7 +40,7 @@ class UserControllerTest {
 
     @Test
     void getMyUser_returnsCurrentUser() throws Exception {
-        when(userService.getMyUser(1L)).thenReturn(new MyUserResponseDto(1L, "qcheck_user", "김지윤"));
+        when(userService.getMyUser(1L)).thenReturn(new MyUserResponseDto(1L, "qcheck_user", "김지윤", "user@example.com", "010-1234-5678"));
 
         mockMvc.perform(get("/api/users/me").header("X-USER-ID", "1"))
                 .andExpect(status().isOk())
@@ -53,7 +53,7 @@ class UserControllerTest {
     @Test
     void putMyUser_updatesRealName() throws Exception {
         when(userService.updateMyUser(any(Long.class), any()))
-                .thenReturn(new MyUserResponseDto(1L, "qcheck_user", "홍길동"));
+                .thenReturn(new MyUserResponseDto(1L, "qcheck_user", "홍길동", "user@example.com", "010-1234-5678"));
 
         mockMvc.perform(put("/api/users/me")
                         .header("X-USER-ID", "1")

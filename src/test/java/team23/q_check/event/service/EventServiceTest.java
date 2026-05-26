@@ -24,6 +24,7 @@ import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
 import team23.q_check.event.domain.repository.RegistrationRepository;
+import team23.q_check.integrations.domain.service.DiscordBotService;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -49,6 +50,7 @@ class EventServiceTest {
     private EventPhotoRepository eventPhotoRepository;
     private ClubRepository clubRepository;
     private ClubAuthorizationService clubAuthorizationService;
+    private DiscordBotService discordBotService;
     private EventService eventService;
 
     @BeforeEach
@@ -61,6 +63,7 @@ class EventServiceTest {
         eventPhotoRepository = mock(EventPhotoRepository.class);
         clubRepository = mock(ClubRepository.class);
         clubAuthorizationService = mock(ClubAuthorizationService.class);
+        discordBotService = mock(DiscordBotService.class);
         eventService = new EventService(
                 eventRepository,
                 formFieldRepository,
@@ -70,6 +73,7 @@ class EventServiceTest {
                 eventPhotoRepository,
                 clubRepository,
                 clubAuthorizationService,
+                discordBotService,
                 new ObjectMapper()
         );
     }
@@ -107,6 +111,7 @@ class EventServiceTest {
                         null,
                         null,
                         null,
+                        null,
                         List.of(new FormFieldRequestDto("SELECT", "식사 메뉴", true, List.of("한식", "양식")))
                 )
         );
@@ -133,6 +138,7 @@ class EventServiceTest {
                                 "OT",
                                 null,
                                 "2026-03-10T19:00:00",
+                                null,
                                 null,
                                 null,
                                 null,
@@ -170,6 +176,7 @@ class EventServiceTest {
                         "2026-03-10T19:00:00",
                         "2026-03-10T22:00:00",
                         "강남",
+                        true,
                         "1234567890",
                         new BigDecimal("10000"),
                         List.of()
@@ -201,7 +208,7 @@ class EventServiceTest {
                 () -> eventService.createEvent(1L, new CreateEventRequestDto(
                         1L, "OT", null,
                         "2026-03-10T19:00:00", "2026-03-10T18:00:00",
-                        null, null, null, List.of()
+                        null, null, null, null, List.of()
                 ))
         );
         assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
@@ -218,7 +225,7 @@ class EventServiceTest {
         AppException exception = assertThrows(
                 AppException.class,
                 () -> eventService.createEvent(1L, new CreateEventRequestDto(
-                        1L, "OT", null, "2026-03-10T19:00:00", null, null, null,
+                        1L, "OT", null, "2026-03-10T19:00:00", null, null, null, null,
                         new BigDecimal("-1"), List.of()
                 ))
         );
