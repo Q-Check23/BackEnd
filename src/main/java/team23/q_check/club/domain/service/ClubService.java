@@ -55,8 +55,12 @@ public class ClubService {
     public MyClubResponseDto createClub(Long currentUserId, CreateClubRequestDto request) {
         validateCreateRequest(request);
 
-        if (clubRepository.existsByDiscordGuildId(request.discordGuildId())) {
-            throw new AppException(ErrorCode.CONFLICT, "Club already exists with discordGuildId: " + request.discordGuildId());
+        String guildId = (request.discordGuildId() != null && !request.discordGuildId().isBlank())
+                ? request.discordGuildId().trim()
+                : null;
+
+        if (guildId != null && clubRepository.existsByDiscordGuildId(guildId)) {
+            throw new AppException(ErrorCode.CONFLICT, "Club already exists with discordGuildId: " + guildId);
         }
 
         User currentUser = userRepository.findById(currentUserId)
@@ -65,7 +69,7 @@ public class ClubService {
         Club club = new Club(
                 request.name().trim(),
                 request.description(),
-                request.discordGuildId().trim(),
+                guildId,
                 request.coverImageUrl(),
                 generateUniqueInviteCode()
         );
@@ -126,14 +130,25 @@ public class ClubService {
         }
         ClubMember membership = clubAuthorizationService.requireAdminOrOwner(clubId, currentUserId);
         Club club = membership.getClub();
-        club.updateInfo(request.name(), request.description(), request.coverImageUrl());
+
+        if (request.discordGuildId() != null && !request.discordGuildId().isBlank()) {
+            String newGuildId = request.discordGuildId().trim();
+            if (!newGuildId.equals(club.getDiscordGuildId())
+                    && clubRepository.existsByDiscordGuildId(newGuildId)) {
+                throw new AppException(ErrorCode.CONFLICT,
+                        "Club already exists with discordGuildId: " + newGuildId);
+            }
+        }
+
+        club.updateInfo(request.name(), request.description(), request.coverImageUrl(), request.discordGuildId());
         long memberCount = clubMemberRepository.countByClub_Id(clubId);
         return new ClubDetailResponseDto(
                 club.getId(),
                 club.getName(),
                 club.getDescription(),
                 memberCount,
-                membership.getRole()
+                membership.getRole(),
+                club.getDiscordGuildId()
         );
     }
 
@@ -147,7 +162,8 @@ public class ClubService {
                 club.getName(),
                 club.getDescription(),
                 memberCount,
-                membership.getRole()
+                membership.getRole(),
+                club.getDiscordGuildId()
         );
     }
 
@@ -285,9 +301,6 @@ public class ClubService {
         }
         if (request.name() == null || request.name().isBlank()) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "name is required");
-        }
-        if (request.discordGuildId() == null || request.discordGuildId().isBlank()) {
-            throw new AppException(ErrorCode.INVALID_REQUEST, "discordGuildId is required");
         }
     }
 

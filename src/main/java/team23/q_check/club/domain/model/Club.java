@@ -27,7 +27,7 @@ public class Club {
     @Column(nullable = true, length = 255)
     private String description;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = true, length = 50)
     private String discordGuildId;
 
     @Column(nullable = true, length = 255)
@@ -74,7 +74,7 @@ public class Club {
         return inviteCode;
     }
 
-    public void updateInfo(String name, String description, String coverImageUrl) {
+    public void updateInfo(String name, String description, String coverImageUrl, String discordGuildId) {
         if (name != null && !name.isBlank()) {
             this.name = name.trim();
         }
@@ -83,6 +83,9 @@ public class Club {
         }
         if (coverImageUrl != null) {
             this.coverImageUrl = coverImageUrl;
+        }
+        if (discordGuildId != null) {
+            this.discordGuildId = discordGuildId.isBlank() ? null : discordGuildId.trim();
         }
     }
 }

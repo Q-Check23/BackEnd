@@ -14,6 +14,8 @@ public record ClubDetailResponseDto(
         @Schema(example = "12")
         Long memberCount,
         @Schema(example = "OWNER")
-        ClubRole myRole
+        ClubRole myRole,
+        @Schema(description = "디스코드 서버 ID", example = "123456789012345678")
+        String discordGuildId
 ) {
 }
