@@ -153,6 +153,7 @@ public class RegistrationService {
                         registration.getId(),
                         registration.getUser().getId(),
                         registration.getUser().getUsername(),
+                        registration.getUser().getRealName(),
                         registration.getStatus().name(),
                         registration.getQrToken(),
                         answersByRegistrationId.getOrDefault(registration.getId(), List.of())

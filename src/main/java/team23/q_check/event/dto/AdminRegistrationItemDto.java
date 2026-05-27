@@ -12,6 +12,8 @@ public record AdminRegistrationItemDto(
         Long userId,
         @Schema(example = "kimjyun")
         String username,
+        @Schema(example = "김지윤")
+        String realName,
         @Schema(example = "REGISTERED")
         String status,
         @Schema(example = "550e8400-e29b-41d4-a716-446655440000")
