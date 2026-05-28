@@ -8,9 +8,7 @@ import team23.q_check.club.domain.repository.ClubMemberRepository;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.event.domain.model.Event;
-import team23.q_check.event.domain.model.RegistrationStatus;
 import team23.q_check.event.domain.repository.EventRepository;
-import team23.q_check.event.domain.repository.RegistrationRepository;
 import team23.q_check.event.dto.CalendarClubGroupDto;
 import team23.q_check.event.dto.CalendarEventItemDto;
 
@@ -24,21 +22,15 @@ import java.util.stream.Collectors;
 @Service
 public class CalendarService {
 
-    private static final List<RegistrationStatus> ACTIVE_STATUSES =
-            List.of(RegistrationStatus.REGISTERED, RegistrationStatus.CHECKED_IN);
-
     private final ClubMemberRepository clubMemberRepository;
     private final EventRepository eventRepository;
-    private final RegistrationRepository registrationRepository;
 
     public CalendarService(
             ClubMemberRepository clubMemberRepository,
-            EventRepository eventRepository,
-            RegistrationRepository registrationRepository
+            EventRepository eventRepository
     ) {
         this.clubMemberRepository = clubMemberRepository;
         this.eventRepository = eventRepository;
-        this.registrationRepository = registrationRepository;
     }
 
     @Transactional(readOnly = true)
@@ -83,12 +75,12 @@ public class CalendarService {
             throw new AppException(ErrorCode.INVALID_REQUEST, "query is required");
         }
 
-        List<Long> eventIds = registrationRepository.findEventIdsByUserIdAndStatuses(userId, ACTIVE_STATUSES);
-        if (eventIds.isEmpty()) {
+        List<Long> clubIds = userClubIds(userId);
+        if (clubIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return eventRepository.searchInUserEvents(eventIds, query.trim()).stream()
+        return eventRepository.searchInUserClubs(clubIds, query.trim()).stream()
                 .map(this::toEventItemDto)
                 .toList();
     }
@@ -105,18 +97,24 @@ public class CalendarService {
             throw new AppException(ErrorCode.INVALID_REQUEST, "startDate must not be after endDate");
         }
 
-        List<Long> eventIds = registrationRepository.findEventIdsByUserIdAndStatuses(userId, ACTIVE_STATUSES);
-        if (eventIds.isEmpty()) {
+        List<Long> clubIds = userClubIds(userId);
+        if (clubIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return eventRepository.filterUserEvents(
-                eventIds,
+        return eventRepository.filterUserClubEvents(
+                clubIds,
                 startDate,
                 endDate,
                 isBlank(eventName) ? null : eventName.trim(),
                 isBlank(clubName) ? null : clubName.trim()
         ).stream().map(this::toEventItemDto).toList();
+    }
+
+    private List<Long> userClubIds(Long userId) {
+        return clubMemberRepository.findAllByUser_Id(userId).stream()
+                .map(m -> m.getClub().getId())
+                .toList();
     }
 
     private CalendarEventItemDto toEventItemDto(Event event) {
