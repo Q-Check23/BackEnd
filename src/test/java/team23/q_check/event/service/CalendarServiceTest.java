@@ -151,12 +151,23 @@ class CalendarServiceTest {
     }
 
     @Test
-    void filterEvents_allFiltersBlank_throwsBadRequest() {
-        AppException exception = assertThrows(
-                AppException.class,
-                () -> calendarService.filterEvents(1L, null, null, null, "  ")
-        );
-        assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
+    void filterEvents_allFiltersBlank_returnsAllUserEvents() throws Exception {
+        Club umc = newClub(10L, "UMC");
+        Event ot = newEvent(101L, umc, "OT", "2026-03-10T19:00:00");
+        when(registrationRepository.findEventIdsByUserIdAndStatuses(eq(1L), anyList()))
+                .thenReturn(List.of(101L));
+        when(eventRepository.filterUserEvents(
+                eq(List.of(101L)),
+                eq(null),
+                eq(null),
+                eq(null),
+                eq(null)
+        )).thenReturn(List.of(ot));
+
+        List<CalendarEventItemDto> result = calendarService.filterEvents(1L, null, null, null, "  ");
+
+        assertEquals(1, result.size());
+        assertEquals(101L, result.get(0).eventId());
     }
 
     @Test

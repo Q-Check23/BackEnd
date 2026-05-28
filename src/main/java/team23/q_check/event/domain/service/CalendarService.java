@@ -101,9 +101,6 @@ public class CalendarService {
             String eventName,
             String clubName
     ) {
-        if (startDate == null && endDate == null && isBlank(eventName) && isBlank(clubName)) {
-            throw new AppException(ErrorCode.INVALID_REQUEST, "At least one filter parameter is required");
-        }
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
             throw new AppException(ErrorCode.INVALID_REQUEST, "startDate must not be after endDate");
         }
