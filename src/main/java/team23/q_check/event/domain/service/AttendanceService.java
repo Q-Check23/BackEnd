@@ -44,7 +44,7 @@ public class AttendanceService {
         }
 
         Registration registration = registrationRepository.findByQrToken(qrToken)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Registration not found for qrToken"));
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "사전등록되지 않은 참가자입니다"));
 
         return performCheckIn(currentUserId, registration, AttendanceMethod.QR);
     }
@@ -59,7 +59,7 @@ public class AttendanceService {
         }
 
         Registration registration = registrationRepository.findByEvent_IdAndUser_Id(eventId, currentUserId)
-                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Registration not found for this event"));
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "사전등록되지 않은 참가자입니다"));
 
         if (registration.getStatus() == RegistrationStatus.CHECKED_IN) {
             throw new AppException(ErrorCode.CONFLICT, "Already checked in");
