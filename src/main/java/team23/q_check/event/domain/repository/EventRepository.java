@@ -21,27 +21,27 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("""
             SELECT e FROM Event e
-            WHERE e.id IN :eventIds
+            WHERE e.club.id IN :clubIds
             AND (LOWER(e.title) LIKE LOWER(CONCAT('%', :query, '%'))
                  OR LOWER(COALESCE(e.location, '')) LIKE LOWER(CONCAT('%', :query, '%'))
                  OR LOWER(e.club.name) LIKE LOWER(CONCAT('%', :query, '%')))
             ORDER BY e.startTime ASC
             """)
-    List<Event> searchInUserEvents(@Param("eventIds") List<Long> eventIds,
-                                   @Param("query") String query);
+    List<Event> searchInUserClubs(@Param("clubIds") List<Long> clubIds,
+                                  @Param("query") String query);
 
     @Query("""
             SELECT e FROM Event e
-            WHERE e.id IN :eventIds
+            WHERE e.club.id IN :clubIds
             AND (:startDate IS NULL OR e.startTime >= :startDate)
             AND (:endDate IS NULL OR e.startTime <= :endDate)
             AND (:eventName IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :eventName, '%')))
             AND (:clubName IS NULL OR LOWER(e.club.name) LIKE LOWER(CONCAT('%', :clubName, '%')))
             ORDER BY e.startTime ASC
             """)
-    List<Event> filterUserEvents(@Param("eventIds") List<Long> eventIds,
-                                 @Param("startDate") LocalDateTime startDate,
-                                 @Param("endDate") LocalDateTime endDate,
-                                 @Param("eventName") String eventName,
-                                 @Param("clubName") String clubName);
+    List<Event> filterUserClubEvents(@Param("clubIds") List<Long> clubIds,
+                                     @Param("startDate") LocalDateTime startDate,
+                                     @Param("endDate") LocalDateTime endDate,
+                                     @Param("eventName") String eventName,
+                                     @Param("clubName") String clubName);
 }

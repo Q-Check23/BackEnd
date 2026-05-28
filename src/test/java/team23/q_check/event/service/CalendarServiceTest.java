@@ -10,7 +10,6 @@ import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
 import team23.q_check.event.domain.model.Event;
 import team23.q_check.event.domain.repository.EventRepository;
-import team23.q_check.event.domain.repository.RegistrationRepository;
 import team23.q_check.event.domain.service.CalendarService;
 import team23.q_check.event.dto.CalendarClubGroupDto;
 import team23.q_check.event.dto.CalendarEventItemDto;
@@ -23,7 +22,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -33,15 +31,13 @@ class CalendarServiceTest {
 
     private ClubMemberRepository clubMemberRepository;
     private EventRepository eventRepository;
-    private RegistrationRepository registrationRepository;
     private CalendarService calendarService;
 
     @BeforeEach
     void setUp() {
         clubMemberRepository = mock(ClubMemberRepository.class);
         eventRepository = mock(EventRepository.class);
-        registrationRepository = mock(RegistrationRepository.class);
-        calendarService = new CalendarService(clubMemberRepository, eventRepository, registrationRepository);
+        calendarService = new CalendarService(clubMemberRepository, eventRepository);
     }
 
     @Test
@@ -128,9 +124,8 @@ class CalendarServiceTest {
     }
 
     @Test
-    void searchEvents_noActiveRegistrations_returnsEmpty() {
-        when(registrationRepository.findEventIdsByUserIdAndStatuses(eq(1L), anyList()))
-                .thenReturn(List.of());
+    void searchEvents_userWithoutClubs_returnsEmpty() {
+        when(clubMemberRepository.findAllByUser_Id(1L)).thenReturn(List.of());
 
         assertTrue(calendarService.searchEvents(1L, "OT").isEmpty());
     }
@@ -138,10 +133,12 @@ class CalendarServiceTest {
     @Test
     void searchEvents_returnsRepositoryHitsAsDto() throws Exception {
         Club umc = newClub(10L, "UMC");
+        User me = new User("dev-1", null, "kim", null);
+        setId(me, 1L);
         Event ot = newEvent(101L, umc, "OT", "2026-03-10T19:00:00");
-        when(registrationRepository.findEventIdsByUserIdAndStatuses(eq(1L), anyList()))
-                .thenReturn(List.of(101L));
-        when(eventRepository.searchInUserEvents(List.of(101L), "OT")).thenReturn(List.of(ot));
+        when(clubMemberRepository.findAllByUser_Id(1L))
+                .thenReturn(List.of(new ClubMember(umc, me, ClubRole.MEMBER)));
+        when(eventRepository.searchInUserClubs(List.of(10L), "OT")).thenReturn(List.of(ot));
 
         List<CalendarEventItemDto> result = calendarService.searchEvents(1L, "  OT  ");
 
@@ -151,13 +148,15 @@ class CalendarServiceTest {
     }
 
     @Test
-    void filterEvents_allFiltersBlank_returnsAllUserEvents() throws Exception {
+    void filterEvents_allFiltersBlank_returnsAllUserClubEvents() throws Exception {
         Club umc = newClub(10L, "UMC");
+        User me = new User("dev-1", null, "kim", null);
+        setId(me, 1L);
         Event ot = newEvent(101L, umc, "OT", "2026-03-10T19:00:00");
-        when(registrationRepository.findEventIdsByUserIdAndStatuses(eq(1L), anyList()))
-                .thenReturn(List.of(101L));
-        when(eventRepository.filterUserEvents(
-                eq(List.of(101L)),
+        when(clubMemberRepository.findAllByUser_Id(1L))
+                .thenReturn(List.of(new ClubMember(umc, me, ClubRole.MEMBER)));
+        when(eventRepository.filterUserClubEvents(
+                eq(List.of(10L)),
                 eq(null),
                 eq(null),
                 eq(null),
@@ -186,13 +185,15 @@ class CalendarServiceTest {
     @Test
     void filterEvents_passesTrimmedNamesAndIds() throws Exception {
         Club umc = newClub(10L, "UMC");
+        User me = new User("dev-1", null, "kim", null);
+        setId(me, 1L);
         Event ot = newEvent(101L, umc, "OT", "2026-03-10T19:00:00");
         LocalDateTime start = LocalDateTime.parse("2026-03-01T00:00:00");
         LocalDateTime end = LocalDateTime.parse("2026-03-31T23:59:59");
-        when(registrationRepository.findEventIdsByUserIdAndStatuses(eq(1L), anyList()))
-                .thenReturn(List.of(101L));
-        when(eventRepository.filterUserEvents(
-                eq(List.of(101L)),
+        when(clubMemberRepository.findAllByUser_Id(1L))
+                .thenReturn(List.of(new ClubMember(umc, me, ClubRole.MEMBER)));
+        when(eventRepository.filterUserClubEvents(
+                eq(List.of(10L)),
                 eq(start),
                 eq(end),
                 eq("OT"),
