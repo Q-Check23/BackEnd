@@ -158,7 +158,7 @@ class EventControllerTest {
     void getEventRegistrations_returnsAdminList() throws Exception {
         when(registrationService.getEventRegistrations(1L, 100L))
                 .thenReturn(List.of(new AdminRegistrationItemDto(
-                        200L, 7L, "kimjyun", "REGISTERED",
+                        200L, 7L, "kimjyun", "김지윤", "REGISTERED",
                         "550e8400-e29b-41d4-a716-446655440000",
                         List.of(new RegistrationAnswerResponseDto(11L, "식사 메뉴", "한식"))
                 )));
