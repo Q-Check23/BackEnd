@@ -253,6 +253,67 @@ class ClubServiceTest {
         assertEquals(ErrorCode.FORBIDDEN, exception.getErrorCode());
     }
 
+    @Test
+    void joinClubViaEvent_eventNotFound_throwsNotFound() {
+        when(eventRepository.findById(99L)).thenReturn(Optional.empty());
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> clubService.joinClubViaEvent(1L, 99L)
+        );
+        assertEquals(ErrorCode.NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    void joinClubViaEvent_existingMember_returnsCurrentRoleWithoutInsert() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
+        setId(club, 10L);
+        User me = new User("dev-1", null, "kim", null);
+        setId(me, 1L);
+        team23.q_check.event.domain.model.Event event = new team23.q_check.event.domain.model.Event(
+                club, "OT",
+                java.time.LocalDateTime.parse("2026-06-10T19:00:00"),
+                java.time.LocalDateTime.parse("2026-06-10T19:00:00"),
+                null, true);
+        ClubMember existing = new ClubMember(club, me, ClubRole.ADMIN);
+
+        when(eventRepository.findById(50L)).thenReturn(Optional.of(event));
+        when(clubMemberRepository.findByClub_IdAndUser_Id(10L, 1L)).thenReturn(Optional.of(existing));
+
+        MyClubResponseDto result = clubService.joinClubViaEvent(1L, 50L);
+
+        assertEquals(10L, result.clubId());
+        assertEquals(ClubRole.ADMIN, result.myRole());
+        verify(clubMemberRepository, never()).save(any(ClubMember.class));
+    }
+
+    @Test
+    void joinClubViaEvent_nonMember_savesAsMember() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
+        setId(club, 10L);
+        User me = new User("dev-1", null, "kim", null);
+        setId(me, 1L);
+        team23.q_check.event.domain.model.Event event = new team23.q_check.event.domain.model.Event(
+                club, "OT",
+                java.time.LocalDateTime.parse("2026-06-10T19:00:00"),
+                java.time.LocalDateTime.parse("2026-06-10T19:00:00"),
+                null, true);
+
+        when(eventRepository.findById(50L)).thenReturn(Optional.of(event));
+        when(clubMemberRepository.findByClub_IdAndUser_Id(10L, 1L)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(me));
+
+        MyClubResponseDto result = clubService.joinClubViaEvent(1L, 50L);
+
+        assertEquals(10L, result.clubId());
+        assertEquals(ClubRole.MEMBER, result.myRole());
+
+        ArgumentCaptor<ClubMember> captor = ArgumentCaptor.forClass(ClubMember.class);
+        verify(clubMemberRepository).save(captor.capture());
+        assertEquals(ClubRole.MEMBER, captor.getValue().getRole());
+        assertEquals(1L, captor.getValue().getUser().getId());
+    }
+
     private void setId(Object target, Long id) throws Exception {
         Field field = target.getClass().getDeclaredField("id");
         field.setAccessible(true);
