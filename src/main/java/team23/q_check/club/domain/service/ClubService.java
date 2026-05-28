@@ -17,6 +17,7 @@ import team23.q_check.club.domain.repository.ClubMemberRepository;
 import team23.q_check.club.domain.repository.ClubRepository;
 import team23.q_check.common.error.AppException;
 import team23.q_check.common.error.ErrorCode;
+import team23.q_check.event.domain.model.Event;
 import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.identity.domain.model.User;
 import team23.q_check.identity.domain.repository.UserRepository;
@@ -100,6 +101,25 @@ public class ClubService {
         User currentUser = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
 
+        clubMemberRepository.save(new ClubMember(club, currentUser, ClubRole.MEMBER));
+        return new MyClubResponseDto(club.getId(), club.getName(), club.getDescription(), ClubRole.MEMBER);
+    }
+
+    @Transactional
+    public MyClubResponseDto joinClubViaEvent(Long currentUserId, Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "Event not found: " + eventId));
+        Club club = event.getClub();
+
+        ClubMember existing = clubMemberRepository
+                .findByClub_IdAndUser_Id(club.getId(), currentUserId)
+                .orElse(null);
+        if (existing != null) {
+            return new MyClubResponseDto(club.getId(), club.getName(), club.getDescription(), existing.getRole());
+        }
+
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
         clubMemberRepository.save(new ClubMember(club, currentUser, ClubRole.MEMBER));
         return new MyClubResponseDto(club.getId(), club.getName(), club.getDescription(), ClubRole.MEMBER);
     }

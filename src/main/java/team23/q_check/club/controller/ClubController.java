@@ -58,6 +58,16 @@ public class ClubController {
         return ApiResponse.ok(clubService.joinClub(currentUserId, request));
     }
 
+    @Operation(summary = "행사를 통해 해당 클럽에 가입 (이미 멤버면 멱등)")
+    @PostMapping("/join-via-event/{eventId}")
+    public ApiResponse<MyClubResponseDto> joinClubViaEvent(
+            @Parameter(hidden = true)
+            @CurrentUserId Long currentUserId,
+            @PathVariable Long eventId
+    ) {
+        return ApiResponse.ok(clubService.joinClubViaEvent(currentUserId, eventId));
+    }
+
     @Operation(summary = "내가 속한 클럽 목록 조회")
     @GetMapping
     public ApiResponse<List<MyClubResponseDto>> getMyClubs(
