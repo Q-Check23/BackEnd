@@ -15,6 +15,7 @@ import team23.q_check.event.domain.model.form.FormField;
 import team23.q_check.event.domain.service.RegistrationService;
 import team23.q_check.event.dto.CreateRegistrationRequestDto;
 import team23.q_check.event.dto.RegistrationAnswerRequestDto;
+import team23.q_check.event.domain.repository.AttendanceLogRepository;
 import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
@@ -40,6 +41,7 @@ class RegistrationServiceTest {
     private FormFieldRepository formFieldRepository;
     private FormAnswerRepository formAnswerRepository;
     private UserRepository userRepository;
+    private AttendanceLogRepository attendanceLogRepository;
     private ClubAuthorizationService clubAuthorizationService;
     private RegistrationService registrationService;
 
@@ -50,6 +52,7 @@ class RegistrationServiceTest {
         formFieldRepository = mock(FormFieldRepository.class);
         formAnswerRepository = mock(FormAnswerRepository.class);
         userRepository = mock(UserRepository.class);
+        attendanceLogRepository = mock(AttendanceLogRepository.class);
         clubAuthorizationService = mock(ClubAuthorizationService.class);
         registrationService = new RegistrationService(
                 eventRepository,
@@ -57,6 +60,7 @@ class RegistrationServiceTest {
                 formFieldRepository,
                 formAnswerRepository,
                 userRepository,
+                attendanceLogRepository,
                 clubAuthorizationService,
                 new ObjectMapper()
         );

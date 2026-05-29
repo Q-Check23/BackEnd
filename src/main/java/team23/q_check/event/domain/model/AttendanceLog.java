@@ -53,6 +53,14 @@ public class AttendanceLog {
         return id;
     }
 
+    public Registration getRegistration() {
+        return registration;
+    }
+
+    public LocalDateTime getCheckInTime() {
+        return checkInTime;
+    }
+
     public AttendanceMethod getMethod() {
         return method;
     }

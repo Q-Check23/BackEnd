@@ -21,6 +21,8 @@ import team23.q_check.event.dto.RegistrationAnswerRequestDto;
 import team23.q_check.event.dto.RegistrationAnswerResponseDto;
 import team23.q_check.identity.domain.model.User;
 import team23.q_check.identity.domain.repository.UserRepository;
+import team23.q_check.event.domain.model.AttendanceLog;
+import team23.q_check.event.domain.repository.AttendanceLogRepository;
 import team23.q_check.event.domain.repository.EventRepository;
 import team23.q_check.event.domain.repository.FormAnswerRepository;
 import team23.q_check.event.domain.repository.FormFieldRepository;
@@ -37,6 +39,7 @@ public class RegistrationService {
     private final FormFieldRepository formFieldRepository;
     private final FormAnswerRepository formAnswerRepository;
     private final UserRepository userRepository;
+    private final AttendanceLogRepository attendanceLogRepository;
     private final ClubAuthorizationService clubAuthorizationService;
     private final ObjectMapper objectMapper;
 
@@ -46,6 +49,7 @@ public class RegistrationService {
             FormFieldRepository formFieldRepository,
             FormAnswerRepository formAnswerRepository,
             UserRepository userRepository,
+            AttendanceLogRepository attendanceLogRepository,
             ClubAuthorizationService clubAuthorizationService,
             ObjectMapper objectMapper
     ) {
@@ -54,6 +58,7 @@ public class RegistrationService {
         this.formFieldRepository = formFieldRepository;
         this.formAnswerRepository = formAnswerRepository;
         this.userRepository = userRepository;
+        this.attendanceLogRepository = attendanceLogRepository;
         this.clubAuthorizationService = clubAuthorizationService;
         this.objectMapper = objectMapper;
     }
@@ -148,6 +153,11 @@ public class RegistrationService {
                     ));
         }
 
+        Map<Long, LocalDateTime> checkInTimeByRegistrationId = new HashMap<>();
+        for (AttendanceLog log : attendanceLogRepository.findAllByEvent_Id(eventId)) {
+            checkInTimeByRegistrationId.put(log.getRegistration().getId(), log.getCheckInTime());
+        }
+
         return registrations.stream()
                 .map(registration -> new AdminRegistrationItemDto(
                         registration.getId(),
@@ -156,6 +166,7 @@ public class RegistrationService {
                         registration.getUser().getRealName(),
                         registration.getStatus().name(),
                         registration.getQrToken(),
+                        checkInTimeByRegistrationId.get(registration.getId()),
                         answersByRegistrationId.getOrDefault(registration.getId(), List.of())
                 ))
                 .toList();
