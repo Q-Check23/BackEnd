@@ -65,9 +65,8 @@ public class AttendanceService {
             throw new AppException(ErrorCode.CONFLICT, "Already checked in");
         }
 
-        if (registration.getStatus() == RegistrationStatus.CANCELED) {
-            throw new AppException(ErrorCode.CONFLICT, "Registration has been canceled");
-        }
+        // 불참(CANCELED) 등록자도 QR 입장 시 무조건 체크인되도록 허용한다.
+        // 현장에서 마음이 바뀐 참가자를 막지 않는다.
 
         User attendee = userRepository.findById(currentUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND, "User not found: " + currentUserId));
