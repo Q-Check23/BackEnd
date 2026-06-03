@@ -34,6 +34,9 @@ public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private static final String OAUTH_STATE_SESSION_KEY = "oauth2_state";
+    // 가장 최근 OAuth 시도가 prompt=none(silent) 이었는지. 콜백에서 Discord 가 error 로
+    // 돌려보냈을 때 일반 동의 흐름으로 자동 재시도할지 판단하는 가드.
+    private static final String OAUTH_SILENT_SESSION_KEY = "oauth2_silent";
 
     private final AuthService authService;
     private final JwtProperties jwtProperties;
@@ -45,12 +48,19 @@ public class AuthController {
         this.frontendProperties = frontendProperties;
     }
 
-    @Operation(summary = "Discord 로그인 리다이렉트", description = "Discord OAuth2 인증 페이지로 리다이렉트합니다")
+    @Operation(
+            summary = "Discord 로그인 리다이렉트",
+            description = "Discord OAuth2 인증 페이지로 리다이렉트합니다. " +
+                    "silent=true 면 prompt=none 을 붙여 이미 인가된 사용자의 동의 화면을 건너뜁니다. " +
+                    "Discord 가 error 로 응답하면 자동으로 일반 흐름으로 재시도합니다."
+    )
     @GetMapping("/login")
-    public void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String state = UUID.randomUUID().toString();
-        request.getSession(true).setAttribute(OAUTH_STATE_SESSION_KEY, state);
-        response.sendRedirect(authService.getAuthorizationUrl(state));
+    public void login(
+            @RequestParam(required = false) Boolean silent,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+        initiateOAuth(request, response, Boolean.TRUE.equals(silent));
     }
 
     @Operation(
@@ -59,17 +69,39 @@ public class AuthController {
                     "프론트의 콜백 라우트(FRONTEND_AUTH_CALLBACK_URL)로 302 redirect 합니다. " +
                     "기존 회원: ?token=<accessJwt>&isNewUser=false (+ refresh token httpOnly 쿠키). " +
                     "신규 회원: ?token=<signupJwt>&isNewUser=true. " +
-                    "에러: ?error=<코드>&message=<설명>."
+                    "에러: ?error=<코드>&message=<설명>. " +
+                    "silent 시도가 Discord 에서 error 로 돌아오면 일반 흐름으로 자동 재시도합니다."
     )
     @GetMapping("/code")
     public void handleCode(
-            @RequestParam String code,
+            @RequestParam(required = false) String code,
             @RequestParam(required = false) String state,
+            @RequestParam(required = false) String error,
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
+        // Discord 가 error 로 응답한 경우: silent 시도였다면 일반 흐름으로 자동 재시도,
+        // 아니면 프론트에 에러 전달
+        if (error != null) {
+            boolean wasSilent = consumeSilentFlag(request);
+            if (wasSilent) {
+                log.info("auth.code.silent_failed error={} retrying with consent", error);
+                initiateOAuth(request, response, false);
+                return;
+            }
+            log.warn("auth.code.discord_error error={}", error);
+            response.sendRedirect(buildErrorUrl("OAUTH_ERROR", "Discord 인증에 실패했습니다"));
+            return;
+        }
+
+        if (code == null) {
+            response.sendRedirect(buildErrorUrl("INVALID_REQUEST", "code 파라미터가 필요합니다"));
+            return;
+        }
+
         try {
             validateOAuthState(request, state);
+            consumeSilentFlag(request);
             CodeResult result = authService.processCode(code);
             if (!result.isNewUser()) {
                 setRefreshCookie(response, result.refreshToken());
@@ -79,6 +111,26 @@ public class AuthController {
             log.warn("auth.code.error code={} msg={}", e.getErrorCode().getCode(), e.getMessage());
             response.sendRedirect(buildErrorUrl(e.getErrorCode().getCode(), e.getMessage()));
         }
+    }
+
+    private void initiateOAuth(HttpServletRequest request, HttpServletResponse response, boolean silent) throws IOException {
+        String state = UUID.randomUUID().toString();
+        HttpSession session = request.getSession(true);
+        session.setAttribute(OAUTH_STATE_SESSION_KEY, state);
+        if (silent) {
+            session.setAttribute(OAUTH_SILENT_SESSION_KEY, Boolean.TRUE);
+        } else {
+            session.removeAttribute(OAUTH_SILENT_SESSION_KEY);
+        }
+        response.sendRedirect(authService.getAuthorizationUrl(state, silent));
+    }
+
+    private boolean consumeSilentFlag(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) return false;
+        Object flag = session.getAttribute(OAUTH_SILENT_SESSION_KEY);
+        session.removeAttribute(OAUTH_SILENT_SESSION_KEY);
+        return Boolean.TRUE.equals(flag);
     }
 
     private String buildSuccessUrl(CodeResult result) {
