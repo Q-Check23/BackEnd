@@ -72,8 +72,13 @@ public class AuthService {
             throw new AppException(ErrorCode.CONFLICT, "이미 사용 중인 아이디입니다");
         }
 
+        if (request.phone() == null || request.phone().isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST, "휴대폰 번호를 입력해주세요");
+        }
+
         String discordId = jwtService.extractDiscordId(signupToken);
         User user = new User(discordId, request.email(), request.username(), request.name());
+        user.updatePhone(request.phone());
         userRepository.save(user);
 
         String accessToken = jwtService.issueAccessToken(user.getId());
