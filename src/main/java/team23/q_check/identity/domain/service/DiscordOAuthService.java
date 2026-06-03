@@ -29,14 +29,28 @@ public class DiscordOAuthService {
     }
 
     public String getAuthorizationUrl(String state) {
-        return UriComponentsBuilder.fromUriString(discordProps.oauthUrl())
+        return getAuthorizationUrl(state, false);
+    }
+
+    /**
+     * Discord OAuth 인증 URL을 생성한다.
+     *
+     * @param state CSRF 방지용 랜덤 state
+     * @param silent true 면 prompt=none 을 붙여 이미 인가된 사용자에 대해 동의 화면을
+     *               건너뛰고 즉시 redirect 한다. 인가가 안 돼 있으면 Discord 가 error
+     *               로 돌려보내므로 호출자는 그 경우를 폴백(일반 흐름 재시도) 해야 한다.
+     */
+    public String getAuthorizationUrl(String state, boolean silent) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(discordProps.oauthUrl())
                 .queryParam("client_id", discordProps.clientId())
                 .queryParam("redirect_uri", discordProps.redirectUri())
                 .queryParam("response_type", "code")
                 .queryParam("scope", "identify email")
-                .queryParam("state", state)
-                .build()
-                .toUriString();
+                .queryParam("state", state);
+        if (silent) {
+            builder.queryParam("prompt", "none");
+        }
+        return builder.build().toUriString();
     }
 
     public DiscordTokenResponse exchangeCode(String code) {

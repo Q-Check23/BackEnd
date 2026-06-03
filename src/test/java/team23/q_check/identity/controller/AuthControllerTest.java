@@ -17,7 +17,11 @@ import team23.q_check.identity.domain.service.AuthService.CodeResult;
 import team23.q_check.identity.domain.service.AuthService.TokenResult;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class AuthControllerTest {
@@ -50,7 +55,8 @@ class AuthControllerTest {
 
     @Test
     void login_redirectsToDiscordAndStoresStateInSession() throws Exception {
-        when(authService.getAuthorizationUrl(any())).thenReturn("https://discord.com/oauth2/authorize?...");
+        when(authService.getAuthorizationUrl(any(), anyBoolean()))
+                .thenReturn("https://discord.com/oauth2/authorize?...");
 
         var result = mockMvc.perform(get("/api/auth/login"))
                 .andExpect(status().is3xxRedirection())
@@ -60,6 +66,54 @@ class AuthControllerTest {
         HttpSession session = result.getRequest().getSession(false);
         assert session != null;
         assert session.getAttribute(OAUTH_STATE_SESSION_KEY) != null;
+        assert session.getAttribute("oauth2_silent") == null;
+    }
+
+    @Test
+    void login_silent_storesSilentFlagAndPassesSilentToAuthService() throws Exception {
+        when(authService.getAuthorizationUrl(any(), anyBoolean()))
+                .thenReturn("https://discord.com/oauth2/authorize?prompt=none&...");
+
+        var result = mockMvc.perform(get("/api/auth/login").param("silent", "true"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        HttpSession session = result.getRequest().getSession(false);
+        assert session != null;
+        assert Boolean.TRUE.equals(session.getAttribute("oauth2_silent"));
+        verify(authService).getAuthorizationUrl(any(), eq(true));
+    }
+
+    @Test
+    void handleCode_silentError_retriesWithoutSilent() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("oauth2_silent", Boolean.TRUE);
+        when(authService.getAuthorizationUrl(any(), eq(false)))
+                .thenReturn("https://discord.com/oauth2/authorize?...");
+
+        mockMvc.perform(get("/api/auth/code")
+                        .session(session)
+                        .param("error", "interaction_required"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("https://discord.com/oauth2/authorize?..."));
+
+        // 자동 재시도는 silent 플래그를 해제하고 일반 흐름으로 한 번만 시도
+        assert session.getAttribute("oauth2_silent") == null;
+        verify(authService).getAuthorizationUrl(any(), eq(false));
+        verify(authService, never()).processCode(any());
+    }
+
+    @Test
+    void handleCode_nonSilentError_redirectsToFrontWithOauthError() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+
+        mockMvc.perform(get("/api/auth/code")
+                        .session(session)
+                        .param("error", "access_denied"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern(FRONT_CALLBACK + "?error=OAUTH_ERROR*"));
+
+        verify(authService, never()).processCode(any());
     }
 
     @Test

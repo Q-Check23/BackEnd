@@ -113,7 +113,11 @@ public class AuthService {
     }
 
     public String getAuthorizationUrl(String state) {
-        return discordOAuthService.getAuthorizationUrl(state);
+        return discordOAuthService.getAuthorizationUrl(state, false);
+    }
+
+    public String getAuthorizationUrl(String state, boolean silent) {
+        return discordOAuthService.getAuthorizationUrl(state, silent);
     }
 
     /**
