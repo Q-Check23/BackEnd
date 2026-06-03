@@ -127,7 +127,7 @@ class AuthServiceTest {
         when(jwtService.issueRefreshToken(7L)).thenReturn("refresh-token");
 
         TokenResult result = authService.signup("signup-token",
-                new SignupRequestDto("김지윤", "kimjyun", "kim@example.com"));
+                new SignupRequestDto("김지윤", "kimjyun", "kim@example.com", "010-1234-5678"));
 
         assertEquals(7L, result.userId());
         assertEquals("access-token", result.accessToken());
@@ -139,6 +139,7 @@ class AuthServiceTest {
         assertEquals("kim@example.com", captor.getValue().getEmail());
         assertEquals("kimjyun", captor.getValue().getUsername());
         assertEquals("김지윤", captor.getValue().getRealName());
+        assertEquals("010-1234-5678", captor.getValue().getPhone());
     }
 
     @Test
@@ -148,7 +149,7 @@ class AuthServiceTest {
         AppException exception = assertThrows(
                 AppException.class,
                 () -> authService.signup("not-signup",
-                        new SignupRequestDto("김지윤", "kimjyun", "kim@example.com"))
+                        new SignupRequestDto("김지윤", "kimjyun", "kim@example.com", "010-1234-5678"))
         );
         assertEquals(ErrorCode.UNAUTHORIZED, exception.getErrorCode());
     }
@@ -161,7 +162,7 @@ class AuthServiceTest {
         AppException exception = assertThrows(
                 AppException.class,
                 () -> authService.signup("signup-token",
-                        new SignupRequestDto("김지윤", "kimjyun", "other@example.com"))
+                        new SignupRequestDto("김지윤", "kimjyun", "other@example.com", "010-1234-5678"))
         );
         assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
     }
@@ -177,7 +178,7 @@ class AuthServiceTest {
         AppException exception = assertThrows(
                 AppException.class,
                 () -> authService.signup("signup-token",
-                        new SignupRequestDto("김지윤", "kimjyun", "kim@example.com"))
+                        new SignupRequestDto("김지윤", "kimjyun", "kim@example.com", "010-1234-5678"))
         );
         assertEquals(ErrorCode.CONFLICT, exception.getErrorCode());
     }
@@ -192,9 +193,25 @@ class AuthServiceTest {
         AppException exception = assertThrows(
                 AppException.class,
                 () -> authService.signup("signup-token",
-                        new SignupRequestDto("김지윤", "kimjyun", "kim@example.com"))
+                        new SignupRequestDto("김지윤", "kimjyun", "kim@example.com", "010-1234-5678"))
         );
         assertEquals(ErrorCode.CONFLICT, exception.getErrorCode());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void signup_phoneMissing_throwsInvalidRequest() {
+        when(jwtService.isSignupToken("signup-token")).thenReturn(true);
+        when(jwtService.extractEmail("signup-token")).thenReturn("kim@example.com");
+        when(userRepository.findByEmail("kim@example.com")).thenReturn(Optional.empty());
+        when(userRepository.existsByUsername("kimjyun")).thenReturn(false);
+
+        AppException exception = assertThrows(
+                AppException.class,
+                () -> authService.signup("signup-token",
+                        new SignupRequestDto("김지윤", "kimjyun", "kim@example.com", "  "))
+        );
+        assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
         verify(userRepository, never()).save(any(User.class));
     }
 
