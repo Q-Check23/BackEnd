@@ -27,6 +27,9 @@ public record EventDetailResponseDto(
         BigDecimal registerFee,
         @Schema(example = "true")
         Boolean isActive,
+        @Schema(description = "사전등록 시 참가자 정보(폼) 수집 여부. false 면 프론트는 폼 없이 원클릭 등록 UI 를 표시",
+                example = "true")
+        Boolean collectRegistrationInfo,
         List<FormFieldResponseDto> formFields
 ) {
 }

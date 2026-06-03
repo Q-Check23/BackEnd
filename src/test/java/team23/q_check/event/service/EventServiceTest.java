@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -112,6 +113,7 @@ class EventServiceTest {
                         null,
                         null,
                         null,
+                        null,
                         List.of(new FormFieldRequestDto("SELECT", "식사 메뉴", true, List.of("한식", "양식")))
                 )
         );
@@ -138,6 +140,7 @@ class EventServiceTest {
                                 "OT",
                                 null,
                                 "2026-03-10T19:00:00",
+                                null,
                                 null,
                                 null,
                                 null,
@@ -179,6 +182,7 @@ class EventServiceTest {
                         true,
                         "1234567890",
                         new BigDecimal("10000"),
+                        null,
                         List.of()
                 )
         );
@@ -196,6 +200,47 @@ class EventServiceTest {
     }
 
     @Test
+    void createEvent_collectRegistrationInfoFalse_skipsFormFieldsAndPersistsFlag() throws Exception {
+        Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
+        setId(club, 1L);
+        User admin = new User("dev-1", null, "admin", null);
+        ClubMember adminMembership = new ClubMember(club, admin, ClubRole.ADMIN);
+        when(clubRepository.existsById(1L)).thenReturn(true);
+        when(clubAuthorizationService.requireAdminOrOwner(1L, 1L)).thenReturn(adminMembership);
+
+        Event saved = new Event(club, "OT",
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                LocalDateTime.parse("2026-03-10T19:00:00"),
+                null, true);
+        setId(saved, 100L);
+        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> {
+            Event toSave = invocation.getArgument(0);
+            setId(toSave, 100L);
+            return toSave;
+        });
+
+        var result = eventService.createEvent(
+                1L,
+                new CreateEventRequestDto(
+                        1L, "OT", null,
+                        "2026-03-10T19:00:00", null, null, null, null, null,
+                        false,
+                        List.of(new FormFieldRequestDto("TEXT", "학번", true, List.of()))
+                )
+        );
+
+        // 토글 OFF 면 응답의 formFields 는 비어 있어야 하고, 플래그는 false 로 노출
+        assertEquals(Boolean.FALSE, result.collectRegistrationInfo());
+        assertEquals(0, result.formFields().size());
+        // formFieldRepository.save 가 호출되지 않았는지 확인 (필드 자체를 만들지 않음)
+        verify(formFieldRepository, never()).save(any());
+
+        ArgumentCaptor<Event> captor = ArgumentCaptor.forClass(Event.class);
+        verify(eventRepository).save(captor.capture());
+        assertEquals(Boolean.FALSE, captor.getValue().getCollectRegistrationInfo());
+    }
+
+    @Test
     void createEvent_endTimeBeforeStart_throwsInvalidRequest() throws Exception {
         Club club = new Club("UMC", "desc", "guild-1", null, "INV12345");
         setId(club, 1L);
@@ -208,7 +253,7 @@ class EventServiceTest {
                 () -> eventService.createEvent(1L, new CreateEventRequestDto(
                         1L, "OT", null,
                         "2026-03-10T19:00:00", "2026-03-10T18:00:00",
-                        null, null, null, null, List.of()
+                        null, null, null, null, null, List.of()
                 ))
         );
         assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());
@@ -226,7 +271,7 @@ class EventServiceTest {
                 AppException.class,
                 () -> eventService.createEvent(1L, new CreateEventRequestDto(
                         1L, "OT", null, "2026-03-10T19:00:00", null, null, null, null,
-                        new BigDecimal("-1"), List.of()
+                        new BigDecimal("-1"), null, List.of()
                 ))
         );
         assertEquals(ErrorCode.INVALID_REQUEST, exception.getErrorCode());

@@ -55,7 +55,7 @@ class EventControllerTest {
                 new EventDetailResponseDto(
                         100L, 1L, "OT", null,
                         "2026-03-10T19:00", null, null, null,
-                        java.math.BigDecimal.ZERO, true,
+                        java.math.BigDecimal.ZERO, true, true,
                         List.of(new FormFieldResponseDto(1L, "TEXT", "학번", true, List.of()))
                 )
         );
@@ -99,7 +99,7 @@ class EventControllerTest {
                 new EventDetailResponseDto(
                         100L, 1L, "OT", null,
                         "2026-03-10T19:00", "2026-03-10T22:00", "강남", null,
-                        java.math.BigDecimal.ZERO, true, List.of())
+                        java.math.BigDecimal.ZERO, true, true, List.of())
         );
 
         mockMvc.perform(get("/api/events/100"))
