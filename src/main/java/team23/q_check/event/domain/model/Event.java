@@ -41,6 +41,9 @@ public class Event {
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal registerFee = BigDecimal.ZERO;
 
+    @Column(name = "collect_registration_info", nullable = false)
+    private Boolean collectRegistrationInfo = true;
+
     protected Event() {
     }
 
@@ -52,7 +55,7 @@ public class Event {
             String location,
             Boolean isActive
     ) {
-        this(club, title, null, startTime, endTime, location, null, isActive, BigDecimal.ZERO);
+        this(club, title, null, startTime, endTime, location, null, isActive, BigDecimal.ZERO, true);
     }
 
     public Event(
@@ -66,6 +69,21 @@ public class Event {
             Boolean isActive,
             BigDecimal registerFee
     ) {
+        this(club, title, description, startTime, endTime, location, discordChannelId, isActive, registerFee, true);
+    }
+
+    public Event(
+            Club club,
+            String title,
+            String description,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            String location,
+            String discordChannelId,
+            Boolean isActive,
+            BigDecimal registerFee,
+            Boolean collectRegistrationInfo
+    ) {
         this.club = club;
         this.title = title;
         this.description = description;
@@ -75,6 +93,7 @@ public class Event {
         this.discordChannelId = discordChannelId;
         this.isActive = isActive == null ? Boolean.TRUE : isActive;
         this.registerFee = registerFee == null ? BigDecimal.ZERO : registerFee;
+        this.collectRegistrationInfo = collectRegistrationInfo == null ? Boolean.TRUE : collectRegistrationInfo;
     }
 
     public Long getId() {
@@ -115,6 +134,10 @@ public class Event {
 
     public BigDecimal getRegisterFee() {
         return registerFee;
+    }
+
+    public Boolean getCollectRegistrationInfo() {
+        return collectRegistrationInfo;
     }
 
     public void update(

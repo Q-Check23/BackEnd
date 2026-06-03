@@ -112,6 +112,7 @@ public class EventService {
             }
         }
 
+        boolean collectInfo = !Boolean.FALSE.equals(request.collectRegistrationInfo());
         Event event = new Event(
                 club,
                 request.title().trim(),
@@ -121,11 +122,15 @@ public class EventService {
                 request.location(),
                 discordChannelId,
                 true,
-                registerFee
+                registerFee,
+                collectInfo
         );
         Event savedEvent = eventRepository.save(event);
 
-        List<FormField> fields = createFormFields(savedEvent, request.formFields());
+        // 정보 수집을 안 받기로 한 행사는 폼 필드 자체를 만들지 않음 — 토글 ON 으로 바꿨다 다시 OFF 한 케이스를 막기 위함
+        List<FormField> fields = collectInfo
+                ? createFormFields(savedEvent, request.formFields())
+                : Collections.emptyList();
         return toDetailDto(savedEvent, fields);
     }
 
@@ -284,6 +289,7 @@ public class EventService {
                 event.getDiscordChannelId(),
                 event.getRegisterFee(),
                 event.getIsActive(),
+                event.getCollectRegistrationInfo(),
                 fieldDtos
         );
     }

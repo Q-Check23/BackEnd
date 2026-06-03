@@ -26,6 +26,9 @@ public record CreateEventRequestDto(
         String discordChannelId,
         @Schema(description = "참가비(원)", example = "10000")
         BigDecimal registerFee,
+        @Schema(description = "사전등록 시 참가자 정보(폼) 수집 여부. null/true면 폼 수집, false면 폼 없이 원클릭 등록. 생성 시에만 지정 가능 (수정 불가)",
+                example = "true")
+        Boolean collectRegistrationInfo,
         List<FormFieldRequestDto> formFields
 ) {
 }
